@@ -34,7 +34,7 @@ console.log(slots, 'slot')
         {/* Time Labels Column */}
         <div className="grid grid-rows-24">
           {dayHours.map((hour, index) => (
-            <div key={index} className='p-4 hover:bg-gray-400 border border-gray-300 text-center'>
+            <div key={index} className='p-4  border border-gray-300 text-center'>
               {hour.time}
             </div>
           ))}
@@ -42,7 +42,7 @@ console.log(slots, 'slot')
 
         {/* Day Columns */}
         {days.map((day, dayIndex) => (
-          <div key={dayIndex} className='grid grid-rows-24 hover:bg-gray-400'>
+          <div key={dayIndex} className='grid grid-rows-24'>
             {dayHours.map((hour, hourIndex) => {
               const slot = slots.find(
                 slot =>
