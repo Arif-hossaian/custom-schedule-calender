@@ -2,22 +2,23 @@ import React, { useState } from 'react';
 import { getWeekDays, formatDate, getDayHours } from '../utils/dateUtlis';
 
 const DraggableSlot = ({ slot, index, onDragStart }) => {
+  console.log(slot, 'slot')
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, index)}
-      className="p-4   py-1"
+      className="p-4  py-1"
     >
       <p>{slot.data}</p>
     </div>
   );
 };
 
-const DroppableSlot = ({ dayIndex, hourIndex, onDrop, onHover, onLeave, children, isHoveredRow, isHoveredColumn }) => {
+const DroppableSlot = ({ dayIndex, hourIndex, onDrop, onHover, onLeave, children, isHoveredRow, isHoveredColumn, slot }) => {
   const handleDragOver = (e) => {
     e.preventDefault();
   };
-
+//console.log(slot, 'slot inside dragable slot')
   return (
     <div
       onDrop={(e) => onDrop(e, dayIndex, hourIndex)}
@@ -93,7 +94,7 @@ const CalendarBody = ({ currentDate }) => {
     setHoveredRow(null);
   };
 
-
+//console.log(dayHours, 'dayhour')
 
   return (
     <div className='border border-gray-300'>
