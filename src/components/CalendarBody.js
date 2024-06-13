@@ -203,7 +203,7 @@ const CalendarBody = ({ currentDate }) => {
                   isSelected={isSelected}
                 >
                   <div
-                    className="p-10"
+                    className="p-24"
                     onMouseDown={() => handleMouseDown(dayIndex, hourIndex)}
                     onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
                   >
