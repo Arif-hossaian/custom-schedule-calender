@@ -2,10 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-.hovered-row ,
+.hovered-row,
 .hovered-column {
   background-color: #E3E3E3; /* Light blue background */
-  border: 1px solid gray
+  border: 1px solid gray;
 }
 
 .hovered-row .time-cell,
@@ -13,8 +13,24 @@
   background-color: rgba(173, 216, 230, 0.5); /* Darker blue background for headers */
 }
 
-
 .hovered-header-column {
-    background-color: #E3E3E3;
-    border: 1px solid gray
+  background-color: #E3E3E3;
+  border: 1px solid gray;
+}
+
+.cell {
+  height: 60px; /* Set the desired height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.time-cell,
+.header-cell {
+  height: 60px; /* Match the height of the cells */
+}
+
+.selected-cell {
+  border: 2px solid #F87171; /* border-red-300 equivalent */
 }
