@@ -36,6 +36,8 @@ const CalendarBody = ({ currentDate }) => {
   const dayHours = getDayHours(currentDate);
   const [slots, setSlots] = useState([]);
   const [hoveredCell, setHoveredCell] = useState(null);
+  const [hoveredColumn, setHoveredColumn] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const handleSlotClick = (dayIndex, hourIndex) => {
     const day = days[dayIndex];
@@ -80,10 +82,14 @@ const CalendarBody = ({ currentDate }) => {
 
   const handleHover = (dayIndex, hourIndex) => {
     setHoveredCell({ dayIndex, hourIndex });
+    setHoveredColumn(dayIndex);
+    setHoveredRow(hourIndex);
   };
 
   const handleLeave = () => {
     setHoveredCell(null);
+    setHoveredColumn(null);
+    setHoveredRow(null);
   };
 
   return (
@@ -92,7 +98,12 @@ const CalendarBody = ({ currentDate }) => {
       <div className="grid grid-cols-8">
         <div className="p-4 border border-gray-300 text-center"></div> {/* Empty box for time labels */}
         {days.map((day, index) => (
-          <div key={index} className="p-4 border border-gray-300 text-center header-cell">
+          <div
+            key={index}
+            className={`p-4 border border-gray-300 text-center header-cell ${hoveredColumn === index ? 'hovered-header-column' : ''}`}
+            onMouseEnter={() => handleHover(index)}
+            onMouseLeave={handleLeave}
+          >
             {formatDate(day, 'dd')}
           </div>
         ))}
@@ -102,8 +113,13 @@ const CalendarBody = ({ currentDate }) => {
       <div className="grid grid-cols-8">
         {/* Time Labels Column */}
         <div className="grid grid-rows-24">
-          {dayHours.map((hour, index) => (
-            <div key={index} className='p-4 border border-gray-300 text-center time-cell'>
+          {dayHours.map((hour, hourIndex) => (
+            <div
+              key={hourIndex}
+              className={`p-4 border border-gray-300 text-center time-cell ${hoveredRow === hourIndex ? 'hovered-row' : ''}`}
+              onMouseEnter={() => handleHover(null, hourIndex)}
+              onMouseLeave={handleLeave}
+            >
               {hour.time}
             </div>
           ))}
@@ -127,7 +143,7 @@ const CalendarBody = ({ currentDate }) => {
                   dayIndex={dayIndex}
                   hourIndex={hourIndex}
                   onDrop={handleDrop}
-                  onHover={handleHover}
+                  onHover={() => handleHover(dayIndex, hourIndex)}
                   onLeave={handleLeave}
                 >
                   <div className={` ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''}`}>
