@@ -81,6 +81,7 @@ const CalendarBody = ({ currentDate }) => {
   };
 
   const handleHover = (dayIndex, hourIndex) => {
+    //console.log('Hovering')
     setHoveredCell({ dayIndex, hourIndex });
     setHoveredColumn(dayIndex);
     setHoveredRow(hourIndex);
