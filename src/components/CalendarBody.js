@@ -2,19 +2,18 @@ import React, { useState } from 'react';
 import { getWeekDays, formatDate, getDayHours } from '../utils/dateUtlis';
 
 const DraggableSlot = ({ slot, index, onDragStart }) => {
-  //console.log(slot, 'slot')
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, index)}
-      className="p-4 border border-gray-300 bg-gray-200 py-1"
+      className="p-4   py-1"
     >
       <p>{slot.data}</p>
     </div>
   );
 };
 
-const DroppableSlot = ({ dayIndex, hourIndex, onDrop, children }) => {
+const DroppableSlot = ({ dayIndex, hourIndex, onDrop, onHover, onLeave, children }) => {
   const handleDragOver = (e) => {
     e.preventDefault();
   };
@@ -23,7 +22,9 @@ const DroppableSlot = ({ dayIndex, hourIndex, onDrop, children }) => {
     <div
       onDrop={(e) => onDrop(e, dayIndex, hourIndex)}
       onDragOver={handleDragOver}
-      className="p-4 border border-gray-300"
+      onMouseEnter={() => onHover(dayIndex, hourIndex)}
+      onMouseLeave={onLeave}
+      className="p-4 border  cell"
     >
       {children}
     </div>
@@ -34,6 +35,7 @@ const CalendarBody = ({ currentDate }) => {
   const days = getWeekDays(currentDate);
   const dayHours = getDayHours(currentDate);
   const [slots, setSlots] = useState([]);
+  const [hoveredCell, setHoveredCell] = useState(null);
 
   const handleSlotClick = (dayIndex, hourIndex) => {
     const day = days[dayIndex];
@@ -49,13 +51,39 @@ const CalendarBody = ({ currentDate }) => {
   };
 
   const handleDrop = (e, dayIndex, hourIndex) => {
-    const index = e.dataTransfer.getData('text/plain');
-    const newSlots = slots.map((slot, i) =>
-      i === parseInt(index, 10)
-        ? { ...slot, day: days[dayIndex], hour: dayHours[hourIndex] }
-        : slot
+    const draggedSlotIndex = e.dataTransfer.getData('text/plain');
+    const draggedSlot = slots[draggedSlotIndex];
+
+    const targetSlotIndex = slots.findIndex(
+      slot =>
+        slot.day.getTime() === days[dayIndex].getTime() &&
+        slot.hour.time === dayHours[hourIndex].time
     );
-    setSlots(newSlots);
+
+    // Swap the slots if the target slot exists
+    if (targetSlotIndex !== -1) {
+      const newSlots = [...slots];
+      const temp = newSlots[draggedSlotIndex];
+      newSlots[draggedSlotIndex] = newSlots[targetSlotIndex];
+      newSlots[targetSlotIndex] = temp;
+      setSlots(newSlots);
+    } else {
+      // Move the dragged slot to the new empty position
+      const newSlots = slots.map((slot, i) =>
+        i === parseInt(draggedSlotIndex, 10)
+          ? { ...slot, day: days[dayIndex], hour: dayHours[hourIndex] }
+          : slot
+      );
+      setSlots(newSlots);
+    }
+  };
+
+  const handleHover = (dayIndex, hourIndex) => {
+    setHoveredCell({ dayIndex, hourIndex });
+  };
+
+  const handleLeave = () => {
+    setHoveredCell(null);
   };
 
   return (
@@ -64,7 +92,7 @@ const CalendarBody = ({ currentDate }) => {
       <div className="grid grid-cols-8">
         <div className="p-4 border border-gray-300 text-center"></div> {/* Empty box for time labels */}
         {days.map((day, index) => (
-          <div key={index} className="p-4 border border-gray-300 text-center">
+          <div key={index} className="p-4 border border-gray-300 text-center header-cell">
             {formatDate(day, 'dd')}
           </div>
         ))}
@@ -75,7 +103,7 @@ const CalendarBody = ({ currentDate }) => {
         {/* Time Labels Column */}
         <div className="grid grid-rows-24">
           {dayHours.map((hour, index) => (
-            <div key={index} className='p-4 border border-gray-300 text-center'>
+            <div key={index} className='p-4 border border-gray-300 text-center time-cell'>
               {hour.time}
             </div>
           ))}
@@ -90,28 +118,34 @@ const CalendarBody = ({ currentDate }) => {
                   slot.day.getTime() === day.getTime() &&
                   slot.hour.time === hour.time
               );
-              console.log(slot, 'slot')
+              const isHoveredRow = hoveredCell && hoveredCell.hourIndex === hourIndex;
+              const isHoveredColumn = hoveredCell && hoveredCell.dayIndex === dayIndex;
+
               return (
                 <DroppableSlot
                   key={hourIndex}
                   dayIndex={dayIndex}
                   hourIndex={hourIndex}
                   onDrop={handleDrop}
+                  onHover={handleHover}
+                  onLeave={handleLeave}
                 >
-                  {slot ? (
-                    <DraggableSlot
-                      slot={slot}
-                      index={slots.indexOf(slot)}
-                      onDragStart={handleDragStart}
-                    />
-                  ) : (
-                    <div
-                      className="p-4 border border-gray-300"
-                      onClick={() => handleSlotClick(dayIndex, hourIndex)}
-                    >
-                      {/* Empty Slot */}
-                    </div>
-                  )}
+                  <div className={` ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''}`}>
+                    {slot ? (
+                      <DraggableSlot
+                        slot={slot}
+                        index={slots.indexOf(slot)}
+                        onDragStart={handleDragStart}
+                      />
+                    ) : (
+                      <div
+                        className="p-4 "
+                        onClick={() => handleSlotClick(dayIndex, hourIndex)}
+                      >
+                        {/* Empty Slot */}
+                      </div>
+                    )}
+                  </div>
                 </DroppableSlot>
               );
             })}

@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.hovered-row ,
+.hovered-column {
+  background-color: bisque; /* Light blue background */
+}
+
+.hovered-row .time-cell,
+.hovered-column .header-cell {
+  background-color: rgba(173, 216, 230, 0.5); /* Darker blue background for headers */
+}
