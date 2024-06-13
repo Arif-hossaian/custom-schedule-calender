@@ -8,7 +8,7 @@ const DraggableSlot = ({ slot, index, onDragStart }) => {
       onDragStart={(e) => onDragStart(e, index)}
       className="py-1"
     >
-      <p>{slot.data}</p>
+     <p>{slot.data}</p>
     </div>
   );
 };
@@ -203,7 +203,7 @@ const CalendarBody = ({ currentDate }) => {
                   isSelected={isSelected}
                 >
                   <div
-                    className="p-24"
+                    className="p-24 w-full"
                     onMouseDown={() => handleMouseDown(dayIndex, hourIndex)}
                     onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
                   >
