@@ -13,7 +13,7 @@ const DraggableSlot = ({ slot, index, onDragStart }) => {
   );
 };
 
-const DroppableSlot = ({ dayIndex, hourIndex, onDrop, onHover, onLeave, children }) => {
+const DroppableSlot = ({ dayIndex, hourIndex, onDrop, onHover, onLeave, children, isHoveredRow, isHoveredColumn }) => {
   const handleDragOver = (e) => {
     e.preventDefault();
   };
@@ -24,12 +24,12 @@ const DroppableSlot = ({ dayIndex, hourIndex, onDrop, onHover, onLeave, children
       onDragOver={handleDragOver}
       onMouseEnter={() => onHover(dayIndex, hourIndex)}
       onMouseLeave={onLeave}
-      className="p-4 border  cell"
+      className={`p-4 border cell ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''}`}
     >
       {children}
     </div>
   );
-};
+}
 
 const CalendarBody = ({ currentDate }) => {
   const days = getWeekDays(currentDate);
@@ -92,6 +92,8 @@ const CalendarBody = ({ currentDate }) => {
     setHoveredRow(null);
   };
 
+
+
   return (
     <div className='border border-gray-300'>
       {/* Header Row */}
@@ -145,8 +147,10 @@ const CalendarBody = ({ currentDate }) => {
                   onDrop={handleDrop}
                   onHover={() => handleHover(dayIndex, hourIndex)}
                   onLeave={handleLeave}
+                  isHoveredRow={isHoveredRow}
+                  isHoveredColumn={isHoveredColumn}
                 >
-                  <div className={` ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''}`}>
+                  <div>
                     {slot ? (
                       <DraggableSlot
                         slot={slot}

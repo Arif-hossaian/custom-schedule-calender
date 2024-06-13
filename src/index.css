@@ -4,7 +4,8 @@
 
 .hovered-row ,
 .hovered-column {
-  background-color: #D7D8D8; /* Light blue background */
+  background-color: #E3E3E3; /* Light blue background */
+  border: 1px solid gray
 }
 
 .hovered-row .time-cell,
@@ -14,5 +15,6 @@
 
 
 .hovered-header-column {
-    background-color: #D7D8D8;
+    background-color: #E3E3E3;
+    border: 1px solid gray
 }
