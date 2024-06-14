@@ -96,43 +96,44 @@ const CalendarBody = ({ currentDate }) => {
   };
 
   const handleDragStart = (e, index) => {
-    e.dataTransfer.setData('text/plain', index);
+    e.dataTransfer.setData('text/plain', index.toString());
   };
 
-  const handleDrop = (e, dayIndex, hourIndex, slotIndex) => {
-    const draggedSlotIndex = e.dataTransfer.getData('text/plain');
-    const draggedSlot = slots[draggedSlotIndex];
+  const handleDrop = (e, dayIndex, hourIndex) => {
+    const draggedCardIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    const draggedCard = eventCards[draggedCardIndex];
   
-    // Find the target slot to swap with
-    const targetSlot = slots.find(
-      (slot) =>
-        slot.dayIndex === dayIndex &&
-        slot.hourIndex === hourIndex &&
-        slot.slotIndex === slotIndex
-    );
+    // Update the position of the dragged card
+    const updatedEventCards = eventCards.map((card, index) => {
+      if (index === draggedCardIndex) {
+        return {
+          ...card,
+          dayIndex,
+          startTop: hourIndex * 24, // Update top position based on dropped slot
+        };
+      }
+      return card;
+    });
   
-    if (targetSlot) {
-      // Swap the slots including the text
-      const newSlots = slots.map((slot) => {
-        if (
-          (slot.dayIndex === dayIndex && slot.hourIndex === hourIndex && slot.slotIndex === slotIndex) ||
-          (slot.dayIndex === draggedSlot.dayIndex && slot.hourIndex === draggedSlot.hourIndex && slot.slotIndex === draggedSlot.slotIndex)
-        ) {
-          return {
-            ...slot,
-            dayIndex: draggedSlot.dayIndex,
-            hourIndex: draggedSlot.hourIndex,
-            slotIndex: draggedSlot.slotIndex,
-            text: draggedSlot.text
-          };
-        } else {
-          return slot;
-        }
-      });
+    // Update the slots with the new position of the event card
+    const newSlots = slots.map((slot) => {
+      if (
+        slot.dayIndex === draggedCard.dayIndex &&
+        slot.hourIndex === Math.floor(draggedCard.startTop / 24)
+      ) {
+        return {
+          ...slot,
+          dayIndex,
+          hourIndex,
+        };
+      }
+      return slot;
+    });
   
-      setSlots(newSlots);
-    }
+    setEventCards(updatedEventCards);
+    setSlots(newSlots);
   };
+  
 
   const handleMouseDown = (dayIndex, hourIndex) => {
     isSelecting.current = true;
@@ -243,7 +244,7 @@ const CalendarBody = ({ currentDate }) => {
                   key={hourIndex}
                   dayIndex={dayIndex}
                   hourIndex={hourIndex}
-                  onDrop={(e) => handleDrop(e, dayIndex, hourIndex, 0)}
+                  onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
                   onHover={() => handleHover(dayIndex, hourIndex)}
                   onLeave={handleLeave}
                   isHoveredRow={isHoveredRow}
@@ -256,36 +257,39 @@ const CalendarBody = ({ currentDate }) => {
                     onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
                   >
                     {Array.from({ length: 4 }).map((_, index) => {
-                    const slot = slotsForHour.find((s) => s.slotIndex === index);
-                    return (
-                      <div
-                        key={index}
-                        className="w-full p-1 border border-red-500"
-                        onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => handleDrop(e, dayIndex, hourIndex, index)}
-                      >
-                        {getTimeRange(hour, index)} {slot ? slot.text : ''}
-                      </div>
-                    );
-                  })}
+                      const slot = slotsForHour.find((s) => s.slotIndex === index);
+                      return (
+                        <div
+                          key={index}
+                          className="w-full p-1 border border-red-500"
+                          onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
+                        >
+                          {getTimeRange(hour, index)} {slot ? slot.text : ''}
+                        </div>
+                      );
+                    })}
                   </div>
                 </DroppableSlot>
               );
             })}
-            {console.log(eventCards, 'eventCards')}
             {eventCards
               .filter(card => card.dayIndex === dayIndex)
               .map((card, index) => (
-              <>
-              {console.log(card, 'card')}
-                <EventCard
+                <div
                   key={index}
-                  data={card.data}
-                  startTime={card.startTime}
-                  endTime={card.endTime}
-                  startTop={`${card.startTop}px`}
-                /></>
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  style={{ top: `${card.startTop}px`, position: 'absolute', zIndex: 10, backgroundColor: 'lightblue', width:'100%' }}
+                >
+                  <EventCard
+                    data={card.data}
+                    startTime={card.startTime}
+                    endTime={card.endTime}
+                    startTop={card.startTop}
+                  />
+                </div>
               ))}
           </div>
         ))}
@@ -293,5 +297,6 @@ const CalendarBody = ({ currentDate }) => {
     </div>
   );
 };
+
 
 export default CalendarBody;
