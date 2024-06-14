@@ -4,6 +4,8 @@ import CalendarBody from './CalendarBody';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  console.log('Calendar Component Rendered: currentDate', currentDate);
+
 
   return (
     <div className="flex flex-col max-w-screen px-10 mx-auto">
