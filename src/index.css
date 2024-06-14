@@ -19,7 +19,7 @@
 }
 
 .cell {
-  height: 60px; /* Set the desired height */
+  height: 130px; /* Set the desired height */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,7 +28,7 @@
 
 .time-cell,
 .header-cell {
-  height: 60px; /* Match the height of the cells */
+  height: 130px; /* Match the height of the cells */
 }
 
 .selected-cell {

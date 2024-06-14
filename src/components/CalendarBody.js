@@ -1,5 +1,20 @@
 import React, { useState, useRef } from 'react';
-import { getWeekDays, formatDate, getDayHours } from '../utils/dateUtlis';
+import { getWeekDays, formatDate, getDayHours, parseDate } from '../utils/dateUtlis';
+
+const EventCard = ({ data, startTime, endTime }) => {
+  const start = parseDate(startTime, 'HH:mm');
+  const end = parseDate(endTime, 'HH:mm');
+  const duration = (end - start) / (1000 * 60 * 15); // Duration in 15-minute intervals
+
+  const cardHeight = duration * 24; // Assuming each 15-minute slot has a height of 24px
+
+  return (
+    <div className="event-card" style={{ height: `${cardHeight}px`, position: 'absolute', top: 0 }}>
+      <p>{data}</p>
+      <p>{startTime} - {endTime}</p>
+    </div>
+  );
+};
 
 const DraggableSlot = ({ slot, index, onDragStart }) => {
   return (
@@ -8,7 +23,7 @@ const DraggableSlot = ({ slot, index, onDragStart }) => {
       onDragStart={(e) => onDragStart(e, index)}
       className="py-1"
     >
-     <p>{slot.data}</p>
+      <p>{slot.data}</p>
     </div>
   );
 };
@@ -51,27 +66,25 @@ const CalendarBody = ({ currentDate }) => {
   const [selectedCells, setSelectedCells] = useState([]);
   const isSelecting = useRef(false);
 
-  const handleSlotClick = () => {
-    const data = prompt('Enter data for this slot:');
-    if (data !== null) {
-      const newSlots = slots.slice();
-      selectedCells.forEach(({ dayIndex, hourIndex }) => {
-        const day = days[dayIndex];
-        const hour = dayHours[hourIndex];
-        const existingSlotIndex = newSlots.findIndex(
-          (slot) =>
-            slot.day.getTime() === day.getTime() &&
-            slot.hour.time === hour.time
-        );
+  const handleSlotClick = (dayIndex, hourIndex, slotIndex) => {
+    const text = prompt('Enter text for this slot:');
 
-        if (existingSlotIndex > -1) {
-          newSlots[existingSlotIndex] = { ...newSlots[existingSlotIndex], data };
-        } else {
-          newSlots.push({ day, hour, data });
-        }
-      });
+    if (text !== null) {
+      const newSlots = slots.slice();
+      const existingSlotIndex = newSlots.findIndex(
+        (slot) =>
+          slot.dayIndex === dayIndex &&
+          slot.hourIndex === hourIndex &&
+          slot.slotIndex === slotIndex
+      );
+
+      if (existingSlotIndex > -1) {
+        newSlots[existingSlotIndex] = { ...newSlots[existingSlotIndex], text };
+      } else {
+        newSlots.push({ dayIndex, hourIndex, slotIndex, text });
+      }
+
       setSlots(newSlots);
-      setSelectedCells([]);
     }
   };
 
@@ -85,11 +98,10 @@ const CalendarBody = ({ currentDate }) => {
 
     const targetSlotIndex = slots.findIndex(
       (slot) =>
-        slot.day.getTime() === days[dayIndex].getTime() &&
-        slot.hour.time === dayHours[hourIndex].time
+        slot.dayIndex === dayIndex &&
+        slot.hourIndex === hourIndex
     );
 
-    // Swap the slots if the target slot exists
     if (targetSlotIndex !== -1) {
       const newSlots = [...slots];
       const temp = newSlots[draggedSlotIndex];
@@ -97,10 +109,9 @@ const CalendarBody = ({ currentDate }) => {
       newSlots[targetSlotIndex] = temp;
       setSlots(newSlots);
     } else {
-      // Move the dragged slot to the new empty position
       const newSlots = slots.map((slot, i) =>
         i === parseInt(draggedSlotIndex, 10)
-          ? { ...slot, day: days[dayIndex], hour: dayHours[hourIndex] }
+          ? { ...slot, dayIndex, hourIndex }
           : slot
       );
       setSlots(newSlots);
@@ -126,7 +137,7 @@ const CalendarBody = ({ currentDate }) => {
   const handleMouseUp = () => {
     isSelecting.current = false;
     if (selectedCells.length > 0) {
-      handleSlotClick();
+      // handleSlotClick();
     }
   };
 
@@ -142,11 +153,17 @@ const CalendarBody = ({ currentDate }) => {
     setHoveredRow(null);
   };
 
+  const getTimeRange = (hour, index) => {
+    const baseTime = new Date(`1970-01-01T${hour.time}Z`);
+    const start = new Date(baseTime.getTime() + index * 15 * 60000).toISOString().substr(11, 5);
+    const end = new Date(baseTime.getTime() + (index + 1) * 15 * 60000).toISOString().substr(11, 5);
+    return `${start} - ${end}`;
+  };
+
   return (
     <div className='border border-gray-300' onMouseUp={handleMouseUp}>
-      {/* Header Row */}
       <div className="grid grid-cols-8">
-        <div className="p-4 border border-gray-300 text-center"></div> {/* Empty box for time labels */}
+        <div className="p-4 border border-gray-300 text-center"></div>
         {days.map((day, index) => (
           <div
             key={index}
@@ -159,9 +176,7 @@ const CalendarBody = ({ currentDate }) => {
         ))}
       </div>
 
-      {/* Schedule Grid */}
       <div className="grid grid-cols-8">
-        {/* Time Labels Column */}
         <div className="grid grid-rows-24">
           {dayHours.map((hour, hourIndex) => (
             <div
@@ -175,14 +190,13 @@ const CalendarBody = ({ currentDate }) => {
           ))}
         </div>
 
-        {/* Day Columns */}
         {days.map((day, dayIndex) => (
-          <div key={dayIndex} className='grid grid-rows-24'>
+          <div key={dayIndex} className='grid grid-rows-24 relative'>
             {dayHours.map((hour, hourIndex) => {
-              const slot = slots.find(
+              const slotsForHour = slots.filter(
                 (slot) =>
-                  slot.day.getTime() === day.getTime() &&
-                  slot.hour.time === hour.time
+                  slot.dayIndex === dayIndex &&
+                  slot.hourIndex === hourIndex
               );
               const isHoveredRow = hoveredCell && hoveredCell.hourIndex === hourIndex;
               const isHoveredColumn = hoveredCell && hoveredCell.dayIndex === dayIndex;
@@ -203,19 +217,22 @@ const CalendarBody = ({ currentDate }) => {
                   isSelected={isSelected}
                 >
                   <div
-                    className="p-24 w-full"
+                    className="w-full"
                     onMouseDown={() => handleMouseDown(dayIndex, hourIndex)}
                     onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
                   >
-                    {slot ? (
-                      <DraggableSlot
-                        slot={slot}
-                        index={slots.indexOf(slot)}
-                        onDragStart={handleDragStart}
-                      />
-                    ) : (
-                      <div>{/* Empty Slot */}</div>
-                    )}
+                    {Array.from({ length: 4 }).map((_, index) => {
+                      const slot = slotsForHour.find(s => s.slotIndex === index);
+                      return (
+                        <div
+                          key={index}
+                          className='w-full p-1 border border-red-500'
+                          onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
+                        >
+                          {getTimeRange(hour, index)} {slot ? slot.text : ''}
+                        </div>
+                      );
+                    })}
                   </div>
                 </DroppableSlot>
               );
