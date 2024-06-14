@@ -1,12 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { getWeekDays, formatDate, getDayHours, parseDate } from '../utils/dateUtlis';
 
+
 const EventCard = ({ data, startTime, endTime, startTop }) => {
   const start = parseDate(startTime, 'HH:mm');
   const end = parseDate(endTime, 'HH:mm');
-  const duration = (end - start) / (1000 * 60 * 15); // Duration in 15-minute intervals
+  console.log(end, 'end')
+  
+  // Calculate duration in minutes
+  const duration = (end.getTime() - start.getTime()) / (1000 * 60); // Duration in minutes
 
-  const cardHeight = duration * 24; // Assuming each 15-minute slot has a height of 24px
+  // Calculate card height based on duration in minutes
+  const cardHeight = duration * 2; // Assuming each minute corresponds to 2 pixels
 
   return (
     <div className="event-card" style={{ height: `${cardHeight}px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10 }}>
@@ -15,6 +20,7 @@ const EventCard = ({ data, startTime, endTime, startTop }) => {
     </div>
   );
 };
+
 
 const DraggableSlot = ({ slot, index, onDragStart }) => {
   return (
@@ -267,16 +273,19 @@ const CalendarBody = ({ currentDate }) => {
                 </DroppableSlot>
               );
             })}
+            {console.log(eventCards, 'eventCards')}
             {eventCards
               .filter(card => card.dayIndex === dayIndex)
               .map((card, index) => (
+              <>
+              {console.log(card, 'card')}
                 <EventCard
                   key={index}
                   data={card.data}
                   startTime={card.startTime}
                   endTime={card.endTime}
                   startTop={`${card.startTop}px`}
-                />
+                /></>
               ))}
           </div>
         ))}
