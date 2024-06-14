@@ -6,7 +6,7 @@ const EventCard = ({ data, startTime, endTime, startTop }) => {
   const start = parseDate(startTime, 'HH:mm');
   const end = parseDate(endTime, 'HH:mm');
   console.log(end, 'end')
-  
+
   // Calculate duration in minutes
   const duration = (end.getTime() - start.getTime()) / (1000 * 60); // Duration in minutes
 
@@ -102,7 +102,7 @@ const CalendarBody = ({ currentDate }) => {
   const handleDrop = (e, dayIndex, hourIndex) => {
     const draggedCardIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
     const draggedCard = eventCards[draggedCardIndex];
-  
+
     // Update the position of the dragged card
     const updatedEventCards = eventCards.map((card, index) => {
       if (index === draggedCardIndex) {
@@ -114,7 +114,7 @@ const CalendarBody = ({ currentDate }) => {
       }
       return card;
     });
-  
+
     // Update the slots with the new position of the event card
     const newSlots = slots.map((slot) => {
       if (
@@ -129,11 +129,11 @@ const CalendarBody = ({ currentDate }) => {
       }
       return slot;
     });
-  
+
     setEventCards(updatedEventCards);
     setSlots(newSlots);
   };
-  
+
 
   const handleMouseDown = (dayIndex, hourIndex) => {
     isSelecting.current = true;
@@ -202,7 +202,7 @@ const CalendarBody = ({ currentDate }) => {
         {days.map((day, index) => (
           <div
             key={index}
-            className={`p-4 border border-gray-300 text-center header-cell ${hoveredColumn === index ? 'hovered-header-column' : ''}`}
+            className={`p-4 border border-gray-300 text-center  ${hoveredColumn === index ? 'hovered-header-column' : ''}`}
             onMouseEnter={() => handleHover(index)}
             onMouseLeave={handleLeave}
           >
@@ -275,13 +275,20 @@ const CalendarBody = ({ currentDate }) => {
               );
             })}
             {eventCards
-              .filter(card => card.dayIndex === dayIndex)
+              .filter((card) => card.dayIndex === dayIndex)
               .map((card, index) => (
                 <div
                   key={index}
                   draggable
                   onDragStart={(e) => handleDragStart(e, index)}
-                  style={{ top: `${card.startTop}px`, position: 'absolute', zIndex: 10, backgroundColor: 'lightblue', width:'100%' }}
+                  style={{
+                    top: `${card.startTop}px`,
+                    position: 'absolute',
+                    zIndex: 10,
+                    backgroundColor: 'lightblue',
+                    width: '100%',
+                    transform: `translateY(${card.startTop}px)`, // Add this line
+                  }}
                 >
                   <EventCard
                     data={card.data}
