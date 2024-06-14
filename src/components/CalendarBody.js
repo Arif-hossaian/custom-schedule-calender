@@ -92,31 +92,41 @@ const CalendarBody = ({ currentDate }) => {
     e.dataTransfer.setData('text/plain', index);
   };
 
-  const handleDrop = (e, dayIndex, hourIndex) => {
+  const handleDrop = (e, dayIndex, hourIndex, slotIndex) => {
     const draggedSlotIndex = e.dataTransfer.getData('text/plain');
     const draggedSlot = slots[draggedSlotIndex];
-
-    const targetSlotIndex = slots.findIndex(
+  
+    // Find the target slot to swap with
+    const targetSlot = slots.find(
       (slot) =>
         slot.dayIndex === dayIndex &&
-        slot.hourIndex === hourIndex
+        slot.hourIndex === hourIndex &&
+        slot.slotIndex === slotIndex
     );
-
-    if (targetSlotIndex !== -1) {
-      const newSlots = [...slots];
-      const temp = newSlots[draggedSlotIndex];
-      newSlots[draggedSlotIndex] = newSlots[targetSlotIndex];
-      newSlots[targetSlotIndex] = temp;
-      setSlots(newSlots);
-    } else {
-      const newSlots = slots.map((slot, i) =>
-        i === parseInt(draggedSlotIndex, 10)
-          ? { ...slot, dayIndex, hourIndex }
-          : slot
-      );
+  
+    if (targetSlot) {
+      // Swap the slots including the text
+      const newSlots = slots.map((slot) => {
+        if (
+          (slot.dayIndex === dayIndex && slot.hourIndex === hourIndex && slot.slotIndex === slotIndex) ||
+          (slot.dayIndex === draggedSlot.dayIndex && slot.hourIndex === draggedSlot.hourIndex && slot.slotIndex === draggedSlot.slotIndex)
+        ) {
+          return {
+            ...slot,
+            dayIndex: draggedSlot.dayIndex,
+            hourIndex: draggedSlot.hourIndex,
+            slotIndex: draggedSlot.slotIndex,
+            text: draggedSlot.text
+          };
+        } else {
+          return slot;
+        }
+      });
+  
       setSlots(newSlots);
     }
   };
+  
 
   const handleMouseDown = (dayIndex, hourIndex) => {
     isSelecting.current = true;
@@ -206,35 +216,38 @@ const CalendarBody = ({ currentDate }) => {
 
               return (
                 <DroppableSlot
-                  key={hourIndex}
-                  dayIndex={dayIndex}
-                  hourIndex={hourIndex}
-                  onDrop={handleDrop}
-                  onHover={() => handleHover(dayIndex, hourIndex)}
-                  onLeave={handleLeave}
-                  isHoveredRow={isHoveredRow}
-                  isHoveredColumn={isHoveredColumn}
-                  isSelected={isSelected}
+                key={hourIndex}
+                dayIndex={dayIndex}
+                hourIndex={hourIndex}
+                onDrop={(e) => handleDrop(e, dayIndex, hourIndex, 0)}
+                onHover={() => handleHover(dayIndex, hourIndex)}
+                onLeave={handleLeave}
+                isHoveredRow={isHoveredRow}
+                isHoveredColumn={isHoveredColumn}
+                isSelected={isSelected}
+              >
+                <div
+                  className="w-full"
+                  onMouseDown={() => handleMouseDown(dayIndex, hourIndex)}
+                  onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
                 >
-                  <div
-                    className="w-full"
-                    onMouseDown={() => handleMouseDown(dayIndex, hourIndex)}
-                    onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
-                  >
-                    {Array.from({ length: 4 }).map((_, index) => {
-                      const slot = slotsForHour.find(s => s.slotIndex === index);
-                      return (
-                        <div
-                          key={index}
-                          className='w-full p-1 border border-red-500'
-                          onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
-                        >
-                          {getTimeRange(hour, index)} {slot ? slot.text : ''}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </DroppableSlot>
+                  {Array.from({ length: 4 }).map((_, index) => {
+                    const slot = slotsForHour.find((s) => s.slotIndex === index);
+                    return (
+                      <div
+                        key={index}
+                        className="w-full p-1 border border-red-500"
+                        onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => handleDrop(e, dayIndex, hourIndex, index)}
+                      >
+                        {getTimeRange(hour, index)} {slot ? slot.text : ''}
+                      </div>
+                    );
+                  })}
+                </div>
+              </DroppableSlot>
+              
               );
             })}
           </div>
