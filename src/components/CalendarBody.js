@@ -252,8 +252,6 @@ const CalendarBody = ({ currentDate }) => {
                 >
                   <div
                     className="w-full h-full"
-                    onMouseDown={() => handleMouseDown(dayIndex, hourIndex)}
-                    onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
                   >
                     {Array.from({ length: 4 }).map((_, index) => {
                       const slot = slotsForHour.find((s) => s.slotIndex === index);
@@ -264,8 +262,9 @@ const CalendarBody = ({ currentDate }) => {
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
+                          onMouseDown={() => handleMouseDown(dayIndex, hourIndex)}
+                          onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
                         >
-                          {console.log(index, '0')}
                           {getTimeRange(hour, index)} {slot ? slot.text : ''}
                         </div>
                       );
