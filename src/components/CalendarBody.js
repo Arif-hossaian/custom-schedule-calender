@@ -7,10 +7,10 @@ const EventCard = ({ data, startTime, endTime, startTop }) => {
 
   const duration = (end.getTime() - start.getTime()) / (1000 * 60);
 
-  const cardHeight = duration * 2;
+  const cardHeight = duration + 2;
 
   return (
-    <div className="event-card" style={{ height: `${cardHeight}px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10 }}>
+    <div className="event-card" style={{ height: `120px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10 }}>
       <p>{data}</p>
       <p>{startTime} - {endTime}</p>
     </div>
@@ -290,6 +290,7 @@ const CalendarBody = ({ currentDate }) => {
                     transform: `translateY(${card.startTop}px)`,
                   }}
                 >
+            
                   <EventCard
                     data={card.data}
                     startTime={card.startTime}
