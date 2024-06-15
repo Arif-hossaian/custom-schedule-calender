@@ -153,7 +153,7 @@ const CalendarBody = ({ currentDate }) => {
       const startCell = selectedCells[0];
       const endCell = selectedCells[selectedCells.length - 1];
       const startTime = dayHours[startCell.hourIndex].time;
-      const endTime = dayHours[endCell.hourIndex].time;
+      const endTime = new Date(new Date(`1970-01-01T${dayHours[endCell.hourIndex].time}Z`).getTime() + 15 * 60000).toISOString().substr(11, 5);
       const text = prompt('Enter text for this event:');
 
       if (text) {
@@ -169,7 +169,7 @@ const CalendarBody = ({ currentDate }) => {
         ]);
       }
       setSelectedCells([]);
-      //setSelectedCellCount(0); // Reset the counter
+      setSelectedCellCount(0); // Reset the counter
     }
   };
 
@@ -290,7 +290,6 @@ const CalendarBody = ({ currentDate }) => {
                     transform: `translateY(${card.startTop}px)`,
                   }}
                 >
-            
                   <EventCard
                     data={card.data}
                     startTime={card.startTime}
