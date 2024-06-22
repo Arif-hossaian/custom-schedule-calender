@@ -26,6 +26,12 @@
   overflow: hidden;
 }
 
+/* Add this to your CSS file */
+.cell.selecting {
+  background-color: rgba(173, 216, 230, 0.5); /* Light blue background with some transparency */
+}
+
+
 .time-cell,
 .header-cell {
   height: 140px; /* Match the height of the cells */

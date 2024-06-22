@@ -1,12 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import { getWeekDays, formatDate, getDayHours, parseDate } from '../utils/dateUtlis';
+import { v4 as uuid } from "uuid";
+
 
 const EventCard = ({ data, startTime, endTime, startTop }) => {
   const start = parseDate(startTime, 'HH:mm');
   const end = parseDate(endTime, 'HH:mm');
-
   const duration = (end.getTime() - start.getTime()) / (1000 * 60);
-
   const cardHeight = duration + 2;
 
   return (
@@ -38,7 +38,8 @@ const DroppableSlot = ({
   children,
   isHoveredRow,
   isHoveredColumn,
-  isSelected
+  isSelected,
+  isSelecting,
 }) => {
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -50,7 +51,7 @@ const DroppableSlot = ({
       onDragOver={handleDragOver}
       onMouseEnter={() => onHover(dayIndex, hourIndex)}
       onMouseLeave={onLeave}
-      className={`border cell ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''} ${isSelected ? 'selected' : ''}`}
+      className={`border cell ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''} ${isSelected ? 'selected' : ''} ${isSelecting ? 'selecting' : ''}`}
     >
       {children}
     </div>
@@ -66,14 +67,30 @@ const CalendarBody = ({ currentDate }) => {
   const [hoveredRow, setHoveredRow] = useState(null);
   const [selectedCells, setSelectedCells] = useState([]);
   const [eventCards, setEventCards] = useState([]);
-  const [selectedCellCount, setSelectedCellCount] = useState(0); // New state for the counter
-  const [slotCounts, setSlotCounts] = useState({});
-
+  const [selectedCellCount, setSelectedCellCount] = useState(0);
+  const [currentTimePosition, setCurrentTimePosition] = useState(null);
   const isSelecting = useRef(false);
+  const randomId = useId();
+  const unique_id = uuid();
+
+  useEffect(() => {
+    const updateTimePosition = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const totalMinutes = hours * 60 + minutes;
+      const totalPixels = (totalMinutes / (24 * 60)) * (24 * 60);
+      setCurrentTimePosition(totalPixels);
+    };
+
+    updateTimePosition();
+    const intervalId = setInterval(updateTimePosition, 60000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleSlotClick = (dayIndex, hourIndex, slotIndex) => {
     const text = prompt('Enter text for this slot:');
-
     if (text !== null) {
       const newSlots = slots.slice();
       const existingSlotIndex = newSlots.findIndex(
@@ -93,13 +110,13 @@ const CalendarBody = ({ currentDate }) => {
     }
   };
 
-  const handleDragStart = (e, index) => {
-    e.dataTransfer.setData('text/plain', index.toString());
+  const handleDragStart = (e, cardId) => {
+    e.dataTransfer.setData('text/plain', cardId);
   };
 
   const handleDrop = (e, dayIndex, hourIndex) => {
-    const draggedCardIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-    const draggedCard = eventCards[draggedCardIndex];
+    const draggedCardId = e.dataTransfer.getData('text/plain');
+    const draggedCardIndex = eventCards.findIndex(card => card.id === draggedCardId);
 
     const updatedEventCards = eventCards.map((card, index) => {
       if (index === draggedCardIndex) {
@@ -112,36 +129,21 @@ const CalendarBody = ({ currentDate }) => {
       return card;
     });
 
-    const newSlots = slots.map((slot) => {
-      if (
-        slot.dayIndex === draggedCard.dayIndex &&
-        slot.hourIndex === Math.floor(draggedCard.startTop / 24)
-      ) {
-        return {
-          ...slot,
-          dayIndex,
-          hourIndex,
-        };
-      }
-      return slot;
-    });
-
     setEventCards(updatedEventCards);
-    setSlots(newSlots);
   };
 
   const handleMouseDown = (dayIndex, hourIndex) => {
     isSelecting.current = true;
     const newSelectedCells = [{ dayIndex, hourIndex }];
     setSelectedCells(newSelectedCells);
-    setSelectedCellCount(newSelectedCells.length); // Update the counter
+    setSelectedCellCount(newSelectedCells.length);
   };
 
   const handleMouseEnter = (dayIndex, hourIndex) => {
     if (isSelecting.current) {
       setSelectedCells((prev) => {
         const newSelectedCells = [...prev, { dayIndex, hourIndex }];
-        setSelectedCellCount(newSelectedCells.length); // Update the counter
+        setSelectedCellCount(newSelectedCells.length);
         return newSelectedCells;
       });
     }
@@ -153,13 +155,16 @@ const CalendarBody = ({ currentDate }) => {
       const startCell = selectedCells[0];
       const endCell = selectedCells[selectedCells.length - 1];
       const startTime = dayHours[startCell.hourIndex].time;
-      const endTime = new Date(new Date(`1970-01-01T${dayHours[endCell.hourIndex].time}Z`).getTime() + 15 * 60000).toISOString().substr(11, 5);
-      const text = prompt('Enter text for this event:');
+      const startDateTime = new Date(`1970-01-01T${dayHours[startCell.hourIndex].time}Z`);
+      const endDateTime = new Date(startDateTime.getTime() + selectedCells.length * 15 * 60000);
+      const endTime = endDateTime.toISOString().substr(11, 5);
 
+      const text = prompt('Enter text for this event:');
       if (text) {
         setEventCards((prev) => [
           ...prev,
           {
+            id: unique_id.slice(0, 8),
             data: text,
             startTime,
             endTime,
@@ -169,7 +174,7 @@ const CalendarBody = ({ currentDate }) => {
         ]);
       }
       setSelectedCells([]);
-      setSelectedCellCount(0); // Reset the counter
+      setSelectedCellCount(0);
     }
   };
 
@@ -193,7 +198,7 @@ const CalendarBody = ({ currentDate }) => {
   };
 
   return (
-    <div className='border border-gray-300' onMouseUp={handleMouseUp}>
+    <div className="border border-gray-300" onMouseUp={handleMouseUp}>
       <div className="grid grid-cols-8">
         <div className="p-4 border border-gray-300 text-center">
           Selected Slots: {selectedCellCount}
@@ -225,12 +230,10 @@ const CalendarBody = ({ currentDate }) => {
         </div>
 
         {days.map((day, dayIndex) => (
-          <div key={dayIndex} className='grid grid-rows-24 relative'>
+          <div key={dayIndex} className="grid grid-rows-24 relative">
             {dayHours.map((hour, hourIndex) => {
               const slotsForHour = slots.filter(
-                (slot) =>
-                  slot.dayIndex === dayIndex &&
-                  slot.hourIndex === hourIndex
+                (slot) => slot.dayIndex === dayIndex && slot.hourIndex === hourIndex
               );
               const isHoveredRow = hoveredCell && hoveredCell.hourIndex === hourIndex;
               const isHoveredColumn = hoveredCell && hoveredCell.dayIndex === dayIndex;
@@ -249,10 +252,9 @@ const CalendarBody = ({ currentDate }) => {
                   isHoveredRow={isHoveredRow}
                   isHoveredColumn={isHoveredColumn}
                   isSelected={isSelected}
+                  isSelecting={isSelecting.current && isSelected}
                 >
-                  <div
-                    className="w-full h-full"
-                  >
+                  <div className="w-full h-full">
                     {Array.from({ length: 4 }).map((_, index) => {
                       const slot = slotsForHour.find((s) => s.slotIndex === index);
                       return (
@@ -276,11 +278,11 @@ const CalendarBody = ({ currentDate }) => {
 
             {eventCards
               .filter((card) => card.dayIndex === dayIndex)
-              .map((card, index) => (
+              .map((card) => (
                 <div
-                  key={index}
+                  key={card.id}
                   draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragStart={(e) => handleDragStart(e, card.id)}
                   style={{
                     top: `${card.startTop}px`,
                     position: 'absolute',
@@ -300,6 +302,20 @@ const CalendarBody = ({ currentDate }) => {
               ))}
           </div>
         ))}
+
+        {currentTimePosition !== null && (
+          <div
+            style={{
+              position: 'absolute',
+              top: `${currentTimePosition}px`,
+              left: '0',
+              right: '0',
+              height: '2px',
+              backgroundColor: 'yellow',
+              zIndex: 20,
+            }}
+          />
+        )}
       </div>
     </div>
   );
