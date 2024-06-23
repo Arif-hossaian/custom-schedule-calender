@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useId } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getWeekDays, formatDate, getDayHours, parseDate } from '../utils/dateUtlis';
 import { v4 as uuid } from "uuid";
 
@@ -15,6 +15,7 @@ const EventCard = ({ data, startTime, endTime, startTop }) => {
     </div>
   );
 };
+
 
 const DraggableSlot = ({ slot, index, onDragStart }) => {
   return (
@@ -80,7 +81,7 @@ const CalendarBody = ({ currentDate }) => {
   const [selectedCellCount, setSelectedCellCount] = useState(0);
   const [currentTimePosition, setCurrentTimePosition] = useState(null);
   const isSelecting = useRef(false);
-  const randomId = useId();
+  
   const unique_id = uuid();
 
   useEffect(() => {
@@ -164,9 +165,10 @@ const CalendarBody = ({ currentDate }) => {
     if (selectedCells.length > 0) {
       const startCell = selectedCells[0];
       const endCell = selectedCells[selectedCells.length - 1];
-      const startTime = dayHours[startCell.hourIndex].time;
-      const startDateTime = new Date(`1970-01-01T${dayHours[startCell.hourIndex].time}Z`);
-      const endDateTime = new Date(startDateTime.getTime() + selectedCells.length * 15 * 60000);
+      const startHour = dayHours[startCell.hourIndex].time;
+      const startDateTime = new Date(`1970-01-01T${startHour}Z`);
+      const startTime = new Date(startDateTime.getTime() + startCell.slotIndex * 15 * 60000).toISOString().substr(11, 5);
+      const endDateTime = new Date(startDateTime.getTime() + (endCell.hourIndex - startCell.hourIndex) * 60 * 60000 + (endCell.slotIndex + 1) * 15 * 60000);
       const endTime = endDateTime.toISOString().substr(11, 5);
 
       const text = prompt('Enter text for this event:');
@@ -179,7 +181,7 @@ const CalendarBody = ({ currentDate }) => {
             startTime,
             endTime,
             dayIndex: startCell.dayIndex,
-            startTop: startCell.hourIndex * 24,
+            startTop: startCell.hourIndex * 24 + startCell.slotIndex * 6,
           },
         ]);
       }
@@ -333,4 +335,5 @@ const CalendarBody = ({ currentDate }) => {
 };
 
 export default CalendarBody;
+
 
