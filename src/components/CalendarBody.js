@@ -9,7 +9,7 @@ const EventCard = ({ data, startTime, endTime, startTop }) => {
   const cardHeight = duration + 2;
 
   return (
-    <div className="event-card" style={{ height: `120px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10 }}>
+    <div className="event-card" style={{ height: `120px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10, cursor:'pointer' }}>
       <p>{data}</p>
       <p>{startTime} - {endTime}</p>
     </div>
@@ -273,7 +273,7 @@ const CalendarBody = ({ currentDate }) => {
                       return (
                         <div
                           key={index}
-                          className={`w-full p-1 border border-red-500`}
+                          className={`w-full p-1 border border-red-500 cursor-pointer`}
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
