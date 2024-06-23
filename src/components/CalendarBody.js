@@ -92,7 +92,7 @@ const CalendarBody = ({ currentDate }) => {
   const handleSlotClick = (dayIndex, hourIndex, slotIndex) => {
     const text = prompt('Enter text for this slot:');
     if (text !== null) {
-      const newSlots = slots.slice();
+      let newSlots = slots.slice();
       const existingSlotIndex = newSlots.findIndex(
         (slot) =>
           slot.dayIndex === dayIndex &&
@@ -131,6 +131,30 @@ const CalendarBody = ({ currentDate }) => {
 
     setEventCards(updatedEventCards);
   };
+
+  // const handleDrop = (e, dayIndex, hourIndex) => {
+  //   const draggedCardId = e.dataTransfer.getData('text/plain');
+  //   const draggedCardIndex = eventCards.findIndex((card) => card.id === draggedCardId);
+  
+  //   if (draggedCardIndex !== -1) {
+  //     const draggedCard = eventCards[draggedCardIndex];
+  //     const startDateTime = new Date(`1970-01-01T${dayHours[hourIndex].time}Z`);
+  //     const endDateTime = new Date(startDateTime.getTime() + (draggedCard.endTime - draggedCard.startTime));
+  //     const endTime = endDateTime.toISOString().substr(11, 5);
+  
+  //     const updatedEventCards = [...eventCards];
+  //     updatedEventCards[draggedCardIndex] = {
+  //       ...updatedEventCards[draggedCardIndex],
+  //       dayIndex,
+  //       startTime: dayHours[hourIndex].time,
+  //       endTime,
+  //       startTop: hourIndex * 24,
+  //     };
+  
+  //     setEventCards(updatedEventCards);
+  //   }
+  // };
+  
 
   const handleMouseDown = (dayIndex, hourIndex) => {
     isSelecting.current = true;
@@ -254,13 +278,13 @@ const CalendarBody = ({ currentDate }) => {
                   isSelected={isSelected}
                   isSelecting={isSelecting.current && isSelected}
                 >
-                  <div className="w-full h-full">
+                  <div className={`w-full h-full`}>
                     {Array.from({ length: 4 }).map((_, index) => {
                       const slot = slotsForHour.find((s) => s.slotIndex === index);
                       return (
                         <div
                           key={index}
-                          className="w-full p-1 border border-red-500"
+                          className={`w-full p-1 border border-red-500`}
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
