@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useId } from 'react';
 import { getWeekDays, formatDate, getDayHours, parseDate } from '../utils/dateUtlis';
 import { v4 as uuid } from "uuid";
 
-
 const EventCard = ({ data, startTime, endTime, startTop }) => {
   const start = parseDate(startTime, 'HH:mm');
   const end = parseDate(endTime, 'HH:mm');
@@ -40,9 +39,18 @@ const DroppableSlot = ({
   isHoveredColumn,
   isSelected,
   isSelecting,
+  selectedCells,
 }) => {
   const handleDragOver = (e) => {
     e.preventDefault();
+  };
+
+  const renderSelectedCells = () => {
+    return selectedCells
+      .filter(cell => cell.dayIndex === dayIndex && cell.hourIndex === hourIndex)
+      .map((cell, index) => (
+        <div key={index} className="absolute w-full h-1/4 bg-green-300" style={{ top: `${cell.slotIndex * 25}%`, backgroundColor: 'rgba(144, 238, 144, 0.5)' }}></div>
+      ));
   };
 
   return (
@@ -51,12 +59,15 @@ const DroppableSlot = ({
       onDragOver={handleDragOver}
       onMouseEnter={() => onHover(dayIndex, hourIndex)}
       onMouseLeave={onLeave}
-      className={`border cell ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''} ${isSelected ? 'selected' : ''} ${isSelecting ? 'selecting' : ''}`}
+      className={`border cell ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''}`}
+      style={{ position: 'relative' }}
     >
+      {renderSelectedCells()}
       {children}
     </div>
   );
 };
+
 
 const CalendarBody = ({ currentDate }) => {
   const days = getWeekDays(currentDate);
@@ -132,33 +143,9 @@ const CalendarBody = ({ currentDate }) => {
     setEventCards(updatedEventCards);
   };
 
-  // const handleDrop = (e, dayIndex, hourIndex) => {
-  //   const draggedCardId = e.dataTransfer.getData('text/plain');
-  //   const draggedCardIndex = eventCards.findIndex((card) => card.id === draggedCardId);
-  
-  //   if (draggedCardIndex !== -1) {
-  //     const draggedCard = eventCards[draggedCardIndex];
-  //     const startDateTime = new Date(`1970-01-01T${dayHours[hourIndex].time}Z`);
-  //     const endDateTime = new Date(startDateTime.getTime() + (draggedCard.endTime - draggedCard.startTime));
-  //     const endTime = endDateTime.toISOString().substr(11, 5);
-  
-  //     const updatedEventCards = [...eventCards];
-  //     updatedEventCards[draggedCardIndex] = {
-  //       ...updatedEventCards[draggedCardIndex],
-  //       dayIndex,
-  //       startTime: dayHours[hourIndex].time,
-  //       endTime,
-  //       startTop: hourIndex * 24,
-  //     };
-  
-  //     setEventCards(updatedEventCards);
-  //   }
-  // };
-  
-
   const handleMouseDown = (dayIndex, hourIndex) => {
     isSelecting.current = true;
-    const newSelectedCells = [{ dayIndex, hourIndex }];
+    const newSelectedCells = [{ dayIndex, hourIndex, slotIndex: 0 }];
     setSelectedCells(newSelectedCells);
     setSelectedCellCount(newSelectedCells.length);
   };
@@ -166,7 +153,7 @@ const CalendarBody = ({ currentDate }) => {
   const handleMouseEnter = (dayIndex, hourIndex) => {
     if (isSelecting.current) {
       setSelectedCells((prev) => {
-        const newSelectedCells = [...prev, { dayIndex, hourIndex }];
+        const newSelectedCells = [...prev, { dayIndex, hourIndex, slotIndex: prev[prev.length - 1].slotIndex + 1 }];
         setSelectedCellCount(newSelectedCells.length);
         return newSelectedCells;
       });
@@ -277,6 +264,7 @@ const CalendarBody = ({ currentDate }) => {
                   isHoveredColumn={isHoveredColumn}
                   isSelected={isSelected}
                   isSelecting={isSelecting.current && isSelected}
+                  selectedCells={selectedCells}
                 >
                   <div className={`w-full h-full`}>
                     {Array.from({ length: 4 }).map((_, index) => {
