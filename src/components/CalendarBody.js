@@ -273,7 +273,7 @@ const CalendarBody = ({ currentDate }) => {
                       return (
                         <div
                           key={index}
-                          className={`w-full p-1 border border-red-500 cursor-pointer`}
+                          className={`w-full p-1 border border-red-500 cursor-pointer hover:bg-yellow-100`}
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
