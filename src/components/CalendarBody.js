@@ -49,7 +49,7 @@ const DroppableSlot = ({
     return selectedCells
       .filter(cell => cell.dayIndex === dayIndex && cell.hourIndex === hourIndex)
       .map((cell, index) => (
-        <div key={index} className="absolute w-full h-1/4 bg-green-300" style={{ top: `${cell.slotIndex * 25}%`, backgroundColor: 'rgba(144, 238, 144, 0.5)' }}></div>
+        <div key={index} className="absolute w-full h-1/4" style={{ top: `${cell.slotIndex * 25}%`, backgroundColor: 'rgba(144, 238, 144, 0.5)' }}></div>
       ));
   };
 
@@ -67,7 +67,6 @@ const DroppableSlot = ({
     </div>
   );
 };
-
 
 const CalendarBody = ({ currentDate }) => {
   const days = getWeekDays(currentDate);
@@ -143,17 +142,17 @@ const CalendarBody = ({ currentDate }) => {
     setEventCards(updatedEventCards);
   };
 
-  const handleMouseDown = (dayIndex, hourIndex) => {
+  const handleMouseDown = (dayIndex, hourIndex, slotIndex) => {
     isSelecting.current = true;
-    const newSelectedCells = [{ dayIndex, hourIndex, slotIndex: 0 }];
+    const newSelectedCells = [{ dayIndex, hourIndex, slotIndex }];
     setSelectedCells(newSelectedCells);
     setSelectedCellCount(newSelectedCells.length);
   };
 
-  const handleMouseEnter = (dayIndex, hourIndex) => {
+  const handleMouseEnter = (dayIndex, hourIndex, slotIndex) => {
     if (isSelecting.current) {
       setSelectedCells((prev) => {
-        const newSelectedCells = [...prev, { dayIndex, hourIndex, slotIndex: prev[prev.length - 1].slotIndex + 1 }];
+        const newSelectedCells = [...prev, { dayIndex, hourIndex, slotIndex }];
         setSelectedCellCount(newSelectedCells.length);
         return newSelectedCells;
       });
@@ -276,8 +275,8 @@ const CalendarBody = ({ currentDate }) => {
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
-                          onMouseDown={() => handleMouseDown(dayIndex, hourIndex)}
-                          onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex)}
+                          onMouseDown={() => handleMouseDown(dayIndex, hourIndex, index)}
+                          onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex, index)}
                         >
                           {getTimeRange(hour, index)} {slot ? slot.text : ''}
                         </div>
@@ -334,3 +333,4 @@ const CalendarBody = ({ currentDate }) => {
 };
 
 export default CalendarBody;
+
