@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getWeekDays, formatDate, getDayHours, parseDate } from '../utils/dateUtlis';
+import { getWeekDays, formatDate, getDayHours, parseDate } from '../../utils/dateUtlis';
 import { v4 as uuid } from "uuid";
 import { format } from 'date-fns'; // Import format from date-fns
 
@@ -60,7 +60,7 @@ const DroppableSlot = ({
   );
 };
 
-const CalendarBody = ({ currentDate }) => {
+const WeekViewBody = ({ currentDate }) => {
   const days = getWeekDays(currentDate);
   const dayHours = getDayHours(currentDate);
   const [slots, setSlots] = useState([]);
@@ -83,7 +83,7 @@ const CalendarBody = ({ currentDate }) => {
       const totalMinutes = hours * 60 + minutes;
       
       // Assuming each slot has a height of 140px and considering Tailwind padding (p-1.5 adds 24px vertically)
-      const slotHeight = 28.5; // Height of each slot
+      const slotHeight = 36; // Height of each slot
       const paddingHeight = 24; // Total vertical padding added by Tailwind's p-1.5
       
       // Calculate total pixels considering the slot height and padding
@@ -361,6 +361,6 @@ const CalendarBody = ({ currentDate }) => {
     </div>
   );
 };
-export default CalendarBody;
+export default WeekViewBody;
 
 

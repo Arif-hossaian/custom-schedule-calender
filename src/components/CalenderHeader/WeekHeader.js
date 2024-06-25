@@ -1,8 +1,8 @@
 import React from 'react';
 import { addMonths, subMonths } from 'date-fns';
-import { formatDate } from '../utils/dateUtlis'
+import { formatDate } from '../../utils/dateUtlis'
 
-const CalendarHeader = ({ currentDate, setCurrentDate }) => {
+const WeekHeader = ({ currentDate, setCurrentDate }) => {
   const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
@@ -15,4 +15,4 @@ const CalendarHeader = ({ currentDate, setCurrentDate }) => {
   );
 };
 
-export default CalendarHeader;
+export default WeekHeader;

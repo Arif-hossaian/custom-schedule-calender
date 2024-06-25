@@ -1,16 +1,38 @@
 import React, { useState } from 'react';
-import CalendarHeader from './CalenderHeader';
-import CalendarBody from './CalendarBody';
+import CalenderView from './CalenderView/CalenderView';
+import WeekViewBody from './CalenderBody/WeekViewBody';
+import WeekHeader from './CalenderHeader/WeekHeader';
+import DayHeader from './CalenderHeader/DayHeader';
+import DayViewBody from './CalenderBody/DayViewBody';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [monthView, setMonthView] = useState(false)
+  const [weekView, setWeekView] = useState(true)
+  const [dayView, setDayView] = useState(false)
+  const [agendaView, setAgendaView] = useState(false)
   //console.log('Calendar Component Rendered: currentDate', currentDate);
 
 
   return (
     <div className="flex flex-col max-w-screen px-10 mx-auto">
-      <CalendarHeader currentDate={currentDate} setCurrentDate={setCurrentDate} />
-      <CalendarBody currentDate={currentDate} />
+      <CalenderView setMonthView={setMonthView} monthView={monthView} weekView={weekView} setWeekView={setWeekView} dayView={dayView} setDayView={setDayView} agendaView={agendaView} setAgendaView={setAgendaView} />
+      {monthView && (
+        <></>
+      )}
+      {weekView && (
+        <>
+          <WeekHeader currentDate={currentDate} setCurrentDate={setCurrentDate} />
+          <WeekViewBody currentDate={currentDate} />
+
+        </>
+      )}
+      {dayView && (
+        <>
+        <DayHeader currentDate={currentDate}/>
+        <DayViewBody currentDate={currentDate} />
+        </>
+      )}
     </div>
   );
 };
