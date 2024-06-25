@@ -4,7 +4,7 @@ import CalendarBody from './CalendarBody';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  console.log('Calendar Component Rendered: currentDate', currentDate);
+  //console.log('Calendar Component Rendered: currentDate', currentDate);
 
 
   return (

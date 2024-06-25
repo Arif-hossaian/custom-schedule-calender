@@ -22,6 +22,32 @@ export const getWeekDays = (date) => {
 //   return hours;
 // };
 
+// export const getDayHours = (date) => {
+//   let start = new Date(date);
+//   start.setHours(9, 0, 0, 0); // Start from 9:00 AM
+
+//   const hours = [];
+
+//   for (let i = 0; i < 8; i++) { // Generate hours from 9:00 AM to 4:00 PM
+//     let hour = addHours(start, i);
+
+//     // Push the hour itself
+//     hours.push({
+//       time: format(hour, 'HH:mm'),
+//       date: hour.toString(),
+//       slots: [], // Initialize slots array for each hour
+//     });
+
+//     // Generate 4 slots per hour (15-minute intervals)
+//     for (let j = 0; j < 4; j++) {
+//       const slotHour = addMinutes(hour, j * 15); // Calculate the current slot hour
+//       hours[i].slots.push(format(slotHour, 'HH:mm')); // Push formatted time slot (HH:mm) to the slots array
+//     }
+//   }
+
+//   return hours;
+// };
+
 export const getDayHours = (date) => {
   let start = new Date(date);
   start.setHours(9, 0, 0, 0); // Start from 9:00 AM
@@ -33,7 +59,7 @@ export const getDayHours = (date) => {
 
     // Push the hour itself
     hours.push({
-      time: format(hour, 'HH:mm'),
+      time: format(hour, 'hh:mm a'), // Format to 12-hour with AM/PM
       date: hour.toString(),
       slots: [], // Initialize slots array for each hour
     });
@@ -41,7 +67,7 @@ export const getDayHours = (date) => {
     // Generate 4 slots per hour (15-minute intervals)
     for (let j = 0; j < 4; j++) {
       const slotHour = addMinutes(hour, j * 15); // Calculate the current slot hour
-      hours[i].slots.push(format(slotHour, 'HH:mm')); // Push formatted time slot (HH:mm) to the slots array
+      hours[i].slots.push(format(slotHour, 'hh:mm a')); // Push formatted time slot (hh:mm a) to the slots array
     }
   }
 
