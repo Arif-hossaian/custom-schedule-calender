@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getWeekDays, formatDate, getDayHours, parseDate } from '../utils/dateUtlis';
 import { v4 as uuid } from "uuid";
+import { format } from 'date-fns'; // Import format from date-fns
+
 
 const EventCard = ({ data, startTime, endTime, startTop }) => {
+  //console.log(startTime, 'starttime')
   const start = parseDate(startTime, 'HH:mm');
   const end = parseDate(endTime, 'HH:mm');
   const duration = (end.getTime() - start.getTime()) / (1000 * 60);
   const cardHeight = duration + 2;
 
   return (
-    <div className="event-card" style={{ height: `120px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10, cursor:'pointer' }}>
+    <div className="event-card" style={{ height: `120px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10, cursor:'pointer', width:'100%' }}>
       <p>{data}</p>
       <p>{startTime} - {endTime}</p>
     </div>
@@ -17,17 +20,6 @@ const EventCard = ({ data, startTime, endTime, startTop }) => {
 };
 
 
-const DraggableSlot = ({ slot, index, onDragStart }) => {
-  return (
-    <div
-      draggable
-      onDragStart={(e) => onDragStart(e, index)}
-      className="py-1"
-    >
-      <p>{slot.data}</p>
-    </div>
-  );
-};
 
 const DroppableSlot = ({
   dayIndex,
@@ -81,7 +73,7 @@ const CalendarBody = ({ currentDate }) => {
   const [selectedCellCount, setSelectedCellCount] = useState(0);
   const [currentTimePosition, setCurrentTimePosition] = useState(null);
   const isSelecting = useRef(false);
-  
+
   const unique_id = uuid();
 
   useEffect(() => {
@@ -90,7 +82,7 @@ const CalendarBody = ({ currentDate }) => {
       const hours = now.getHours();
       const minutes = now.getMinutes();
       const totalMinutes = hours * 60 + minutes;
-      const totalPixels = (totalMinutes / (24 * 60)) * (24 * 60);
+      const totalPixels = (totalMinutes / (24 * 60)) * (24 * 30);
       setCurrentTimePosition(totalPixels);
     };
 
@@ -166,10 +158,21 @@ const CalendarBody = ({ currentDate }) => {
       const startCell = selectedCells[0];
       const endCell = selectedCells[selectedCells.length - 1];
       const startHour = dayHours[startCell.hourIndex].time;
-      const startDateTime = new Date(`1970-01-01T${startHour}Z`);
-      const startTime = new Date(startDateTime.getTime() + startCell.slotIndex * 15 * 60000).toISOString().substr(11, 5);
-      const endDateTime = new Date(startDateTime.getTime() + (endCell.hourIndex - startCell.hourIndex) * 60 * 60000 + (endCell.slotIndex + 1) * 15 * 60000);
-      const endTime = endDateTime.toISOString().substr(11, 5);
+
+      const baseTime = new Date();
+      let hourInt = parseInt(startHour.split(':')[0], 10);
+  
+      if (hourInt < 9) {
+        hourInt += 12; 
+      }
+  
+      baseTime.setHours(hourInt, parseInt(startHour.split(':')[1], 10), 0, 0);
+    
+      const startDateTime = new Date(baseTime.getTime() + startCell.slotIndex * 15 * 60000);
+      const startTime = format(startDateTime, 'hh:mm a');
+      
+      const endDateTime = new Date(baseTime.getTime() + (endCell.hourIndex - startCell.hourIndex) * 60 * 60000 + (endCell.slotIndex + 1) * 15 * 60000);
+      const endTime = format(endDateTime, 'hh:mm a');
 
       const text = prompt('Enter text for this event:');
       if (text) {
@@ -190,7 +193,7 @@ const CalendarBody = ({ currentDate }) => {
     }
   };
 
-  const handleHover = (dayIndex, hourIndex) => {
+  const handleHover = (dayIndex, hourIndex, slots) => {
     setHoveredCell({ dayIndex, hourIndex });
     setHoveredColumn(dayIndex);
     setHoveredRow(hourIndex);
@@ -203,10 +206,29 @@ const CalendarBody = ({ currentDate }) => {
   };
 
   const getTimeRange = (hour, index) => {
-    const baseTime = new Date(`1970-01-01T${hour.time}Z`);
-    const start = new Date(baseTime.getTime() + index * 15 * 60000).toISOString().substr(11, 5);
-    const end = new Date(baseTime.getTime() + (index + 1) * 15 * 60000).toISOString().substr(11, 5);
-    return `${start} - ${end}`;
+    // Split hour.time to get hour and minute parts
+    const [hourPart, minutePart] = hour.time.split(':');
+    
+    // Create a new Date object and set its hours and minutes
+    const baseTime = new Date();
+    let hourInt = parseInt(hourPart, 10);
+  
+    // Adjust for PM hours (assuming hour.time is in 24-hour format)
+    if (hourInt < 9) {
+      hourInt += 12; // Convert morning hours (1 PM to 11 PM)
+    }
+  
+    baseTime.setHours(hourInt, parseInt(minutePart, 10), 0, 0);
+    
+    // Calculate start and end times based on 15-minute intervals
+    const start = new Date(baseTime.getTime() + index * 15 * 60000);
+    const end = new Date(baseTime.getTime() + (index + 1) * 15 * 60000);
+  
+    // Format start and end times to 'hh:mm a'
+    const startFormatted = format(start, 'hh:mm a');
+    const endFormatted = format(end, 'hh:mm a');
+    
+    return `${startFormatted} - ${endFormatted}`;
   };
 
   return (
@@ -233,7 +255,7 @@ const CalendarBody = ({ currentDate }) => {
             <div
               key={hourIndex}
               className={`p-4 border border-gray-300 text-center time-cell ${hoveredRow === hourIndex ? 'hovered-row' : ''}`}
-              onMouseEnter={() => handleHover(null, hourIndex)}
+              onMouseEnter={() => handleHover(null, hourIndex, hour.slots)}
               onMouseLeave={handleLeave}
             >
               {hour.time}
@@ -242,7 +264,7 @@ const CalendarBody = ({ currentDate }) => {
         </div>
 
         {days.map((day, dayIndex) => (
-          <div key={dayIndex} className="grid grid-rows-24 relative">
+          <div key={dayIndex} className="relative">
             {dayHours.map((hour, hourIndex) => {
               const slotsForHour = slots.filter(
                 (slot) => slot.dayIndex === dayIndex && slot.hourIndex === hourIndex
@@ -259,7 +281,7 @@ const CalendarBody = ({ currentDate }) => {
                   dayIndex={dayIndex}
                   hourIndex={hourIndex}
                   onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
-                  onHover={() => handleHover(dayIndex, hourIndex)}
+                  onHover={() => handleHover(dayIndex, hourIndex, hour.slots)}
                   onLeave={handleLeave}
                   isHoveredRow={isHoveredRow}
                   isHoveredColumn={isHoveredColumn}
@@ -273,7 +295,7 @@ const CalendarBody = ({ currentDate }) => {
                       return (
                         <div
                           key={index}
-                          className={`w-full p-1 border border-red-500 cursor-pointer hover:bg-yellow-100`}
+                          className={`w-full text-sm p-1.5 border border-red-500 cursor-pointer hover:bg-yellow-100`}
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
@@ -288,7 +310,7 @@ const CalendarBody = ({ currentDate }) => {
                 </DroppableSlot>
               );
             })}
-
+{console.log(eventCards, 'ev')}
             {eventCards
               .filter((card) => card.dayIndex === dayIndex)
               .map((card) => (
@@ -333,7 +355,6 @@ const CalendarBody = ({ currentDate }) => {
     </div>
   );
 };
-
 export default CalendarBody;
 
 
