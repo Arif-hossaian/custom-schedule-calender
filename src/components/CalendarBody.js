@@ -5,7 +5,6 @@ import { format } from 'date-fns'; // Import format from date-fns
 
 
 const EventCard = ({ data, startTime, endTime, startTop }) => {
-  //console.log(startTime, 'starttime')
   const start = parseDate(startTime, 'HH:mm');
   const end = parseDate(endTime, 'HH:mm');
   const duration = (end.getTime() - start.getTime()) / (1000 * 60);
@@ -82,8 +81,16 @@ const CalendarBody = ({ currentDate }) => {
       const hours = now.getHours();
       const minutes = now.getMinutes();
       const totalMinutes = hours * 60 + minutes;
-      const totalPixels = (totalMinutes / (24 * 60)) * (24 * 30);
+      
+      // Assuming each slot has a height of 140px and considering Tailwind padding (p-1.5 adds 24px vertically)
+      const slotHeight = 26.8; // Height of each slot
+      const paddingHeight = 24; // Total vertical padding added by Tailwind's p-1.5
+      
+      // Calculate total pixels considering the slot height and padding
+      const totalPixels = (totalMinutes / (24 * 60)) * (24 * (slotHeight + paddingHeight));
+      
       setCurrentTimePosition(totalPixels);
+      
     };
 
     updateTimePosition();
@@ -310,7 +317,6 @@ const CalendarBody = ({ currentDate }) => {
                 </DroppableSlot>
               );
             })}
-{console.log(eventCards, 'ev')}
             {eventCards
               .filter((card) => card.dayIndex === dayIndex)
               .map((card) => (
