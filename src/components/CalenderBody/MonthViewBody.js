@@ -32,15 +32,12 @@ const MonthViewBody = ({ currentDate }) => {
   const onDrop = (event, targetDay) => {
     event.preventDefault(); // Prevent default behavior
     const eventDetails = JSON.parse(event.dataTransfer.getData('eventDetails'));
-    const startRow = Math.floor(days.findIndex(day => isSameDay(day, eventDetails.date)) / 7);
-    const targetRow = Math.floor(days.findIndex(day => isSameDay(day, targetDay)) / 7);
 
-    // Allow only horizontal drag within the same row
-    if (startRow === targetRow) {
-      setEvents(events.map(ev =>
-        ev === eventDetails ? { ...ev, date: targetDay } : ev
-      ));
-    }
+    setEvents(events.map(ev =>
+      isSameDay(ev.date, eventDetails.date) && ev.title === eventDetails.title
+        ? { ...ev, date: targetDay }
+        : ev
+    ));
   };
 
   const onDragOver = (event) => {
@@ -101,7 +98,7 @@ const MonthViewBody = ({ currentDate }) => {
         {days.map((day, index) => (
           <div
             key={index}
-            className={`py-10 border border-gray-300 text-center ${isSameMonth(day, currentDate) ? '' : 'bg-gray-200'} ${isDaySelected(day) ? 'bg-blue-100' : ''}`}
+            className={`py-10 border border-gray-300 text-left ${isSameMonth(day, currentDate) ? '' : 'bg-gray-200'} ${isDaySelected(day) ? 'bg-blue-100' : ''}`}
             onClick={() => handleCellClick(day)}
             onDrop={(event) => onDrop(event, day)}
             onDragOver={onDragOver}
