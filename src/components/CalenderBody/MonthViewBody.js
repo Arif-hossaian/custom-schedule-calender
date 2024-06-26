@@ -89,7 +89,7 @@ const MonthViewBody = ({ currentDate }) => {
     <div className="border border-gray-300" onMouseUp={onMouseUp}>
       <div className="grid grid-cols-7 border-b border-gray-300">
         {days.slice(0, 7).map((day, index) => (
-          <div key={index} className="p-2 text-center font-bold">
+          <div key={index} className="p-2 text-center border border-gray-300 font-bold">
             {format(day, 'EEE')}
           </div>
         ))}
