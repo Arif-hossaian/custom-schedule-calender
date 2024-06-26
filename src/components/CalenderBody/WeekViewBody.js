@@ -83,7 +83,7 @@ const WeekViewBody = ({ currentDate }) => {
       const totalMinutes = hours * 60 + minutes;
       
       // Assuming each slot has a height of 140px and considering Tailwind padding (p-1.5 adds 24px vertically)
-      const slotHeight = 36; // Height of each slot
+      const slotHeight = 13; // Height of each slot
       const paddingHeight = 24; // Total vertical padding added by Tailwind's p-1.5
       
       // Calculate total pixels considering the slot height and padding
@@ -302,14 +302,15 @@ const WeekViewBody = ({ currentDate }) => {
                       return (
                         <div
                           key={index}
-                          className={`w-full text-sm p-1.5 border border-red-500 cursor-pointer hover:bg-yellow-100`}
+                          className={`w-full text-sm py-4 border border-red-500 cursor-pointer hover:bg-yellow-100`}
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
                           onMouseDown={() => handleMouseDown(dayIndex, hourIndex, index)}
                           onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex, index)}
                         >
-                          {getTimeRange(hour, index)} {slot ? slot.text : ''}
+                          {/* {getTimeRange(hour, index)} {slot ? slot.text : ''} */}
+                          {slot ? slot.text : ''}
                         </div>
                       );
                     })}

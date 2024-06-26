@@ -12,12 +12,15 @@ const EventCard = ({ id, data, startTime, endTime, startTop, onDragStart }) => {
   return (
     <div
       className="event-card border border-gray-900"
-      style={{ height: `${cardHeight}px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10, cursor: 'pointer', width: '100%' }}
+      style={{ height: `3%`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10, cursor: 'pointer', width: '100%' }}
       draggable
       onDragStart={(e) => onDragStart(e, id)}
     >
+      <div className='flex justify-start items-center'>
       <p>{data}</p>
-      <p>{startTime} - {endTime}</p>
+      <p className='ml-10'>{startTime} - {endTime}</p>
+      </div>
+      
     </div>
   );
 };
@@ -67,7 +70,7 @@ const DayViewBody = ({ currentDate }) => {
       const minutes = now.getMinutes();
       const totalMinutes = hours * 60 + minutes;
 
-      const slotHeight = 36; // Height of each slot
+      const slotHeight = 13; // Height of each slot
       const paddingHeight = 24; // Total vertical padding added by Tailwind's p-1.5
 
       const totalPixels = (totalMinutes / (24 * 60)) * (24 * (slotHeight + paddingHeight));
@@ -248,12 +251,12 @@ const DayViewBody = ({ currentDate }) => {
                     {Array.from({ length: 4 }).map((_, index) => (
                       <div
                         key={index}
-                        className={`w-full text-sm p-1.5 border border-red-500 cursor-pointer hover:bg-yellow-100`}
+                        className={`w-full text-sm py-4 border border-red-500 cursor-pointer hover:bg-yellow-100`}
                         onClick={() => handleSlotClick(hourIndex, index)}
                         onMouseDown={() => handleMouseDown(hourIndex, index)}
                         onMouseEnter={() => handleMouseEnter(hourIndex, index)}
                       >
-                        {getTimeRange(hour, index)}
+                        {/* {getTimeRange(hour, index)} */}
                       </div>
                     ))}
                   </div>
