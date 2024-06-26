@@ -72,7 +72,7 @@ const WeekViewBody = ({ currentDate }) => {
   const [selectedCellCount, setSelectedCellCount] = useState(0);
   const [currentTimePosition, setCurrentTimePosition] = useState(null);
   const isSelecting = useRef(false);
-
+//console.log(days, 'days')
   const unique_id = uuid();
 
   useEffect(() => {

@@ -4,6 +4,8 @@ import WeekViewBody from './CalenderBody/WeekViewBody';
 import WeekHeader from './CalenderHeader/WeekHeader';
 import DayHeader from './CalenderHeader/DayHeader';
 import DayViewBody from './CalenderBody/DayViewBody';
+import MonthHeader from './CalenderHeader/MonthHeader';
+import MonthViewBody from './CalenderBody/MonthViewBody';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -18,7 +20,10 @@ const Calendar = () => {
     <div className="flex flex-col max-w-screen px-10 mx-auto">
       <CalenderView setMonthView={setMonthView} monthView={monthView} weekView={weekView} setWeekView={setWeekView} dayView={dayView} setDayView={setDayView} agendaView={agendaView} setAgendaView={setAgendaView} />
       {monthView && (
-        <></>
+        <>
+        <MonthHeader currentDate={currentDate} setCurrentDate={setCurrentDate}/>
+        <MonthViewBody currentDate={currentDate} />
+        </>
       )}
       {weekView && (
         <>
@@ -29,7 +34,7 @@ const Calendar = () => {
       )}
       {dayView && (
         <>
-        <DayHeader currentDate={currentDate}/>
+        <DayHeader currentDate={currentDate} setCurrentDate={setCurrentDate}/>
         <DayViewBody currentDate={currentDate} />
         </>
       )}
