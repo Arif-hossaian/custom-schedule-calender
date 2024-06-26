@@ -6,6 +6,8 @@ import DayHeader from './CalenderHeader/DayHeader';
 import DayViewBody from './CalenderBody/DayViewBody';
 import MonthHeader from './CalenderHeader/MonthHeader';
 import MonthViewBody from './CalenderBody/MonthViewBody';
+import AgendaHeader from './CalenderHeader/AgendaHeader';
+import AgendaViewBody from './CalenderBody/AgendaViewBody';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -37,6 +39,12 @@ const Calendar = () => {
         <DayHeader currentDate={currentDate} setCurrentDate={setCurrentDate}/>
         <DayViewBody currentDate={currentDate} />
         </>
+      )}
+
+      {agendaView && (
+        <>
+        <AgendaHeader currentDate={currentDate} setCurrentDate={setCurrentDate}/>
+        <AgendaViewBody currentDate={currentDate}/></>
       )}
     </div>
   );
