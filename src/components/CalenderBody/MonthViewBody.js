@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { getMonthViewDays } from '../../utils/dateUtlis';
-import { format, isSameMonth, isSameDay, isWithinInterval, min, max, addDays } from 'date-fns';
+import { format, isSameMonth, isSameDay, isWithinInterval, min, max, addDays, getDay } from 'date-fns';
 
 const MonthViewBody = ({ currentDate }) => {
   const [events, setEvents] = useState([]);
   const [selectionStart, setSelectionStart] = useState(null);
   const [selectionEnd, setSelectionEnd] = useState(null);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [prompted, setPrompted] = useState(false); // New state to prevent double prompt
+  const [prompted, setPrompted] = useState(false);
+  const [hoveredColumnIndex, setHoveredColumnIndex] = useState(null); // New state to track hovered column index
   const days = getMonthViewDays(currentDate);
 
   const handleCellClick = (day) => {
@@ -85,11 +86,24 @@ const MonthViewBody = ({ currentDate }) => {
     return isWithinInterval(day, { start: startDate, end: endDate });
   };
 
+  const handleHeaderMouseEnter = (index) => {
+    setHoveredColumnIndex(index); // Set hovered column index
+  };
+
+  const handleHeaderMouseLeave = () => {
+    setHoveredColumnIndex(null); // Clear hovered column index
+  };
+
   return (
     <div className="border border-gray-300" onMouseUp={onMouseUp}>
       <div className="grid grid-cols-7 border-b border-gray-300">
         {days.slice(0, 7).map((day, index) => (
-          <div key={index} className="p-2 text-center border border-gray-300 font-bold">
+          <div
+            key={index}
+            className="p-2 text-center border border-gray-300 font-bold hover:bg-gray-200"
+            onMouseEnter={() => handleHeaderMouseEnter(index)}
+            onMouseLeave={handleHeaderMouseLeave}
+          >
             {format(day, 'EEE')}
           </div>
         ))}
@@ -98,7 +112,10 @@ const MonthViewBody = ({ currentDate }) => {
         {days.map((day, index) => (
           <div
             key={index}
-            className={`py-10 border border-gray-300 text-left ${isSameMonth(day, currentDate) ? '' : 'bg-gray-200'} ${isDaySelected(day) ? 'bg-blue-100' : ''}`}
+            className={`py-10 border border-gray-300 text-left 
+              ${isSameMonth(day, currentDate) ? '' : 'bg-gray-200'} 
+              ${isDaySelected(day) ? 'bg-blue-100' : ''} 
+              ${hoveredColumnIndex !== null && hoveredColumnIndex === index % 7 ? 'bg-gray-200' : ''}`}
             onClick={() => handleCellClick(day)}
             onDrop={(event) => onDrop(event, day)}
             onDragOver={onDragOver}
