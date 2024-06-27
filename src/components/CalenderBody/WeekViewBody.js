@@ -267,15 +267,15 @@ const WeekViewBody = ({ currentDate }) => {
         {days.map((day, dayIndex) => (
           <div key={dayIndex} className="relative">
             {dayHours.map((hour, hourIndex) => {
-              const slotsForHour = slots.filter(
-                (slot) => slot.dayIndex === dayIndex && slot.hourIndex === hourIndex
-              );
+              // const slotsForHour = slots.filter(
+              //   (slot) => slot.dayIndex === dayIndex && slot.hourIndex === hourIndex
+              // );
               const isHoveredRow = hoveredCell && hoveredCell.hourIndex === hourIndex;
               const isHoveredColumn = hoveredCell && hoveredCell.dayIndex === dayIndex;
               const isHoveredTimeSlot = hoveredTimeSlot && hoveredTimeSlot.hourIndex === hourIndex && hoveredTimeSlot.slotIndex === 0;
-              const isSelected = selectedCells.some(
-                (cell) => cell.dayIndex === dayIndex && cell.hourIndex === hourIndex
-              );
+              // const isSelected = selectedCells.some(
+              //   (cell) => cell.dayIndex === dayIndex && cell.hourIndex === hourIndex
+              // );
 
               return (
                 <DroppableSlot
@@ -289,13 +289,13 @@ const WeekViewBody = ({ currentDate }) => {
                   isHoveredRow={isHoveredRow}
                   isHoveredColumn={isHoveredColumn}
                   isHoveredTimeSlot={isHoveredTimeSlot}
-                  isSelected={isSelected}
-                  isSelecting={isSelecting.current && isSelected}
+                  // isSelected={isSelected}
+                  // isSelecting={isSelecting.current && isSelected}
                   selectedCells={selectedCells}
                 >
                   <div className={`w-full h-full`}>
                     {Array.from({ length: 4 }).map((_, index) => {
-                      const slot = slotsForHour.find((s) => s.slotIndex === index);
+                      //const slot = slotsForHour.find((s) => s.slotIndex === index);
                       const isHoveredSlot = hoveredTimeSlot && hoveredTimeSlot.hourIndex === hourIndex && hoveredTimeSlot.slotIndex === index;
                       return (
                         <div
@@ -309,7 +309,6 @@ const WeekViewBody = ({ currentDate }) => {
                         >
                          {/* {getTimeRange(hour, index)} {slot ? slot.text : ''} */}
 
-                          {slot ? slot.text : ''}
                         </div>
                       );
                     })}
