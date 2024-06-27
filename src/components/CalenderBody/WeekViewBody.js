@@ -3,7 +3,6 @@ import { getWeekDays, formatDate, getDayHours, parseDate } from '../../utils/dat
 import { v4 as uuid } from "uuid";
 import { format } from 'date-fns'; // Import format from date-fns
 
-
 const EventCard = ({ data, startTime, endTime, startTop }) => {
   const start = parseDate(startTime, 'HH:mm');
   const end = parseDate(endTime, 'HH:mm');
@@ -18,17 +17,17 @@ const EventCard = ({ data, startTime, endTime, startTop }) => {
   );
 };
 
-
-
 const DroppableSlot = ({
   dayIndex,
   hourIndex,
+  slotIndex,
   onDrop,
   onHover,
   onLeave,
   children,
   isHoveredRow,
   isHoveredColumn,
+  isHoveredTimeSlot,
   isSelected,
   isSelecting,
   selectedCells,
@@ -49,9 +48,9 @@ const DroppableSlot = ({
     <div
       onDrop={(e) => onDrop(e, dayIndex, hourIndex)}
       onDragOver={handleDragOver}
-      onMouseEnter={() => onHover(dayIndex, hourIndex)}
+      onMouseEnter={() => onHover(dayIndex, hourIndex, slotIndex)}
       onMouseLeave={onLeave}
-      className={`border cell ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''}`}
+      className={`border cell ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''} ${isHoveredTimeSlot ? 'hovered-time-slot' : ''}`}
       style={{ position: 'relative' }}
     >
       {renderSelectedCells()}
@@ -67,12 +66,13 @@ const WeekViewBody = ({ currentDate }) => {
   const [hoveredCell, setHoveredCell] = useState(null);
   const [hoveredColumn, setHoveredColumn] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
+  const [hoveredTimeSlot, setHoveredTimeSlot] = useState(null); // New state for hovered time slot
   const [selectedCells, setSelectedCells] = useState([]);
   const [eventCards, setEventCards] = useState([]);
   const [selectedCellCount, setSelectedCellCount] = useState(0);
   const [currentTimePosition, setCurrentTimePosition] = useState(null);
   const isSelecting = useRef(false);
-//console.log(days, 'days')
+
   const unique_id = uuid();
 
   useEffect(() => {
@@ -82,11 +82,9 @@ const WeekViewBody = ({ currentDate }) => {
       const minutes = now.getMinutes();
       const totalMinutes = hours * 60 + minutes;
       
-      // Assuming each slot has a height of 140px and considering Tailwind padding (p-1.5 adds 24px vertically)
       const slotHeight = 13; // Height of each slot
       const paddingHeight = 24; // Total vertical padding added by Tailwind's p-1.5
       
-      // Calculate total pixels considering the slot height and padding
       const totalPixels = (totalMinutes / (24 * 60)) * (24 * (slotHeight + paddingHeight));
       
       setCurrentTimePosition(totalPixels);
@@ -200,38 +198,34 @@ const WeekViewBody = ({ currentDate }) => {
     }
   };
 
-  const handleHover = (dayIndex, hourIndex, slots) => {
+  const handleHover = (dayIndex, hourIndex, slotIndex) => {
     setHoveredCell({ dayIndex, hourIndex });
     setHoveredColumn(dayIndex);
     setHoveredRow(hourIndex);
+    setHoveredTimeSlot({ hourIndex, slotIndex }); // Set hovered time slot
   };
 
   const handleLeave = () => {
     setHoveredCell(null);
     setHoveredColumn(null);
     setHoveredRow(null);
+    setHoveredTimeSlot(null); // Clear hovered time slot
   };
 
   const getTimeRange = (hour, index) => {
-    // Split hour.time to get hour and minute parts
     const [hourPart, minutePart] = hour.time.split(':');
-    
-    // Create a new Date object and set its hours and minutes
     const baseTime = new Date();
     let hourInt = parseInt(hourPart, 10);
   
-    // Adjust for PM hours (assuming hour.time is in 24-hour format)
     if (hourInt < 9) {
-      hourInt += 12; // Convert morning hours (1 PM to 11 PM)
+      hourInt += 12; 
     }
   
     baseTime.setHours(hourInt, parseInt(minutePart, 10), 0, 0);
     
-    // Calculate start and end times based on 15-minute intervals
     const start = new Date(baseTime.getTime() + index * 15 * 60000);
     const end = new Date(baseTime.getTime() + (index + 1) * 15 * 60000);
   
-    // Format start and end times to 'hh:mm a'
     const startFormatted = format(start, 'hh:mm a');
     const endFormatted = format(end, 'hh:mm a');
     
@@ -278,6 +272,7 @@ const WeekViewBody = ({ currentDate }) => {
               );
               const isHoveredRow = hoveredCell && hoveredCell.hourIndex === hourIndex;
               const isHoveredColumn = hoveredCell && hoveredCell.dayIndex === dayIndex;
+              const isHoveredTimeSlot = hoveredTimeSlot && hoveredTimeSlot.hourIndex === hourIndex && hoveredTimeSlot.slotIndex === 0;
               const isSelected = selectedCells.some(
                 (cell) => cell.dayIndex === dayIndex && cell.hourIndex === hourIndex
               );
@@ -287,11 +282,13 @@ const WeekViewBody = ({ currentDate }) => {
                   key={hourIndex}
                   dayIndex={dayIndex}
                   hourIndex={hourIndex}
+                  slotIndex={0}
                   onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
-                  onHover={() => handleHover(dayIndex, hourIndex, hour.slots)}
+                  onHover={() => handleHover(dayIndex, hourIndex, 1)}
                   onLeave={handleLeave}
                   isHoveredRow={isHoveredRow}
                   isHoveredColumn={isHoveredColumn}
+                  isHoveredTimeSlot={isHoveredTimeSlot}
                   isSelected={isSelected}
                   isSelecting={isSelecting.current && isSelected}
                   selectedCells={selectedCells}
@@ -299,17 +296,19 @@ const WeekViewBody = ({ currentDate }) => {
                   <div className={`w-full h-full`}>
                     {Array.from({ length: 4 }).map((_, index) => {
                       const slot = slotsForHour.find((s) => s.slotIndex === index);
+                      const isHoveredSlot = hoveredTimeSlot && hoveredTimeSlot.hourIndex === hourIndex && hoveredTimeSlot.slotIndex === index;
                       return (
                         <div
                           key={index}
-                          className={`w-full text-sm py-4 border border-red-500 cursor-pointer hover:bg-yellow-100`}
+                          className={`w-full text-sm py-4 border border-red-500 cursor-pointer ${isHoveredSlot ? 'bg-blue-100' : ''}`}
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
                           onMouseDown={() => handleMouseDown(dayIndex, hourIndex, index)}
                           onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex, index)}
                         >
-                          {/* {getTimeRange(hour, index)} {slot ? slot.text : ''} */}
+                         {/* {getTimeRange(hour, index)} {slot ? slot.text : ''} */}
+
                           {slot ? slot.text : ''}
                         </div>
                       );
@@ -363,5 +362,3 @@ const WeekViewBody = ({ currentDate }) => {
   );
 };
 export default WeekViewBody;
-
-
