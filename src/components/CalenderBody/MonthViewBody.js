@@ -100,9 +100,9 @@ const MonthViewBody = ({ currentDate }) => {
         {days.slice(0, 7).map((day, index) => (
           <div
             key={index}
-            className="p-2 text-center border border-gray-300 font-bold hover:bg-gray-200"
-            onMouseEnter={() => handleHeaderMouseEnter(index)}
-            onMouseLeave={handleHeaderMouseLeave}
+            className="p-2 text-center border border-gray-300 font-bold"
+            //onMouseEnter={() => handleHeaderMouseEnter(index)}
+            //onMouseLeave={handleHeaderMouseLeave}
           >
             {format(day, 'EEE')}
           </div>
@@ -112,10 +112,14 @@ const MonthViewBody = ({ currentDate }) => {
         {days.map((day, index) => (
           <div
             key={index}
-            className={`py-10 border border-gray-300 text-left 
+            // className={`py-10 border border-gray-300 text-left 
+            //   ${isSameMonth(day, currentDate) ? '' : 'bg-gray-200'} 
+            //   ${isDaySelected(day) ? 'bg-blue-100' : ''} 
+            //   ${hoveredColumnIndex !== null && hoveredColumnIndex === index % 7 ? 'bg-gray-200' : ''}`}
+            className={`py-10 border border-gray-300 text-left hover:bg-yellow-100 
               ${isSameMonth(day, currentDate) ? '' : 'bg-gray-200'} 
               ${isDaySelected(day) ? 'bg-blue-100' : ''} 
-              ${hoveredColumnIndex !== null && hoveredColumnIndex === index % 7 ? 'bg-gray-200' : ''}`}
+              ${format(day, 'd') === format(currentDate, 'd') ? 'bg-blue-200' : ''}`}
             onClick={() => handleCellClick(day)}
             onDrop={(event) => onDrop(event, day)}
             onDragOver={onDragOver}
