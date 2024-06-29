@@ -59,9 +59,14 @@ const DroppableSlot = ({
 };
 
 const WeekViewBody = ({ currentDate }) => {
-  const interval = 15
+  const interval = 15;
   const days = getWeekDays(currentDate);
-  const dayHours = getDayHours(currentDate, interval);
+  let weekHours = {};
+
+  days.forEach(day => {
+    weekHours[format(day, 'yyyy-MM-dd')] = getDayHours(day, interval);
+  });
+
   const [slots, setSlots] = useState([]);
   const [hoveredCell, setHoveredCell] = useState(null);
   const [hoveredColumn, setHoveredColumn] = useState(null);
@@ -74,7 +79,49 @@ const WeekViewBody = ({ currentDate }) => {
   const isSelecting = useRef(false);
 
   const unique_id = uuid();
-  const currentTime = format(currentDate, 'hh:mm a');
+
+//console.log(eventCards, 'events')
+
+let events = [
+  {
+    id: 'd2ea8833',
+    data: 'test',
+    date:"2024-06-23",
+    startTime: '12:00 PM',
+    endTime: '12:15 PM',
+    dayIndex: 0,
+    startTop:360
+  },
+  {
+    id: 'b2da109d',
+    data: 'trs',
+    date:"2024-06-28",
+    startTime: '10:30 AM',
+    endTime: '10:45 AM',
+    dayIndex: 5,
+    startTop:180
+  },
+  {
+    id: '49577dfa',
+    data: 'ytr',
+    startTime: '09:30 AM',
+    date:"2024-06-25",
+    endTime: '09:45 AM',
+    dayIndex: 2,
+    startTop:60
+  },
+  {
+    id: 'f815272e',
+    data: 'rer',
+    date:"2024-06-29",
+    startTime: '12:30 PM',
+    endTime: '12:45 PM',
+    dayIndex: 6,
+    startTop:420
+    // other properties as needed
+  }
+];
+
 
   useEffect(() => {
     const updateTimePosition = () => {
@@ -158,11 +205,12 @@ const WeekViewBody = ({ currentDate }) => {
   };
 
   const handleMouseUp = () => {
+    const cellHeight = 120
     isSelecting.current = false;
     if (selectedCells.length > 0) {
       const startCell = selectedCells[0];
       const endCell = selectedCells[selectedCells.length - 1];
-      const startHour = dayHours[startCell.hourIndex].time;
+      const startHour = weekHours[format(days[startCell.dayIndex], 'yyyy-MM-dd')][startCell.hourIndex].time;
 
       const baseTime = new Date();
       let hourInt = parseInt(startHour.split(':')[0], 10);
@@ -180,7 +228,7 @@ const WeekViewBody = ({ currentDate }) => {
       const endTime = format(endDateTime, 'hh:mm a');
 
       const durationInMinutes = (endDateTime.getTime() - startDateTime.getTime()) / 60000;
-      const height = (durationInMinutes / 60) * 120; // Adjust this to fit your slot height
+      const height = (durationInMinutes / 60) * cellHeight; // Adjust this to fit your slot height
 
       const text = prompt('Enter text for this event:');
       if (text) {
@@ -192,8 +240,9 @@ const WeekViewBody = ({ currentDate }) => {
             startTime,
             endTime,
             dayIndex: startCell.dayIndex,
-            startTop: startCell.hourIndex * 120 + startCell.slotIndex * (120 / (60 / interval)),
-            height
+            startTop: startCell.hourIndex * cellHeight + startCell.slotIndex * (cellHeight / (60 / interval)),
+            height,
+            date: format(days[startCell.dayIndex], 'yyyy-MM-dd') // Set the date here
           },
         ]);
       }
@@ -201,7 +250,6 @@ const WeekViewBody = ({ currentDate }) => {
       setSelectedCellCount(0);
     }
   };
-
   const handleHover = (dayIndex, hourIndex, slotIndex) => {
     setHoveredCell({ dayIndex, hourIndex });
     setHoveredColumn(dayIndex);
@@ -245,7 +293,7 @@ const WeekViewBody = ({ currentDate }) => {
 
       <div className="grid grid-cols-8">
         <div className="grid grid-rows-24">
-          {dayHours.map((hour, hourIndex) => (
+          {weekHours[format(days[0], 'yyyy-MM-dd')].map((hour, hourIndex) => (
             <div
               key={hourIndex}
               className={`p-4 border border-gray-300 text-center time-cell ${hoveredRow === hourIndex ? 'hovered-row' : ''}`}
@@ -259,7 +307,7 @@ const WeekViewBody = ({ currentDate }) => {
 
         {days.map((day, dayIndex) => (
           <div key={dayIndex} className="relative">
-            {dayHours.map((hour, hourIndex) => {
+            {weekHours[format(day, 'yyyy-MM-dd')].map((hour, hourIndex) => {
               const isHoveredRow = hoveredCell && hoveredCell.hourIndex === hourIndex;
               const isHoveredColumn = hoveredCell && hoveredCell.dayIndex === dayIndex;
               const isHoveredTimeSlot = hoveredTimeSlot && hoveredTimeSlot.hourIndex === hourIndex && hoveredTimeSlot.slotIndex === 0;
@@ -325,4 +373,5 @@ const WeekViewBody = ({ currentDate }) => {
     </div>
   );
 };
+
 export default WeekViewBody;

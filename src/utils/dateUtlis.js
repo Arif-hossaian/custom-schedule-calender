@@ -39,6 +39,7 @@ export const getWeekDays = (date) => {
 
 
 export const getDayHours = (date, interval) => {
+  //console.log(date, 'date in loop')
   let start = new Date(date);
   start.setHours(9, 0, 0, 0); // Start from 9:00 AM
 
