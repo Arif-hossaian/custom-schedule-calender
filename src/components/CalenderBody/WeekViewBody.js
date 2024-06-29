@@ -31,6 +31,8 @@ const DroppableSlot = ({
   isSelected,
   isSelecting,
   selectedCells,
+  calculateHeightOfSlot,
+  hour
 }) => {
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -40,9 +42,11 @@ const DroppableSlot = ({
     return selectedCells
       .filter(cell => cell.dayIndex === dayIndex && cell.hourIndex === hourIndex)
       .map((cell, index) => (
-        <div key={index} className="absolute w-full h-1/4" style={{ top: `${cell.slotIndex * 25}%`, backgroundColor: 'rgba(144, 238, 144, 0.5)' }}></div>
+        <div key={index} className={`absolute w-full h-[30px]`} style={{ top: `${cell.slotIndex * 25}%`, backgroundColor: 'rgba(144, 238, 144, 0.5)', }}></div>
       ));
   };
+
+  // height:calculateHeightOfSlot(hour.slots.length)
 
   return (
     <div
@@ -50,7 +54,7 @@ const DroppableSlot = ({
       onDragOver={handleDragOver}
       onMouseEnter={() => onHover(dayIndex, hourIndex, slotIndex)}
       onMouseLeave={onLeave}
-      className={`border cell ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''} ${isHoveredTimeSlot ? 'hovered-time-slot' : ''}`}
+      className={`border h-[120px] ${isHoveredRow ? 'hovered-row' : ''} ${isHoveredColumn ? 'hovered-column' : ''} ${isHoveredTimeSlot ? 'hovered-time-slot' : ''}`}
       style={{ position: 'relative' }}
     >
       {renderSelectedCells()}
@@ -60,7 +64,7 @@ const DroppableSlot = ({
 };
 
 const WeekViewBody = ({ currentDate }) => {
-  const interval = 30
+  const interval = 15
   const days = getWeekDays(currentDate);
   const dayHours = getDayHours(currentDate, interval);
   const [slots, setSlots] = useState([]);
@@ -236,22 +240,25 @@ const WeekViewBody = ({ currentDate }) => {
     return `${startFormatted} - ${endFormatted}`;
   };
 
-  const slotHeight = (interval) => {
-    switch (interval) {
-      case 15:
-        return 'py-1';
-      case 30:
-        return 'py-5';
-      default:
-        return 'py-2'
-    }
-  };
+  
+
+
+  const calculateHeightOfSlot = (slotLength) => {
+    const cellHeight = 120; // Height of the parent div in pixels
+
+    // Calculate total padding used by all <p> tags
+    let totalPadding = (slotLength - 1) * 2; // Assuming 2px of padding on both top and bottom
+  
+    // Calculate padding for each <p> tag dynamically
+    let paddingY = (cellHeight - totalPadding) / slotLength;
+    return paddingY
+  }
 
   return (
     <div className="border border-gray-300" onMouseUp={handleMouseUp}>
       <div className="grid grid-cols-8">
         <div className="p-4 border border-gray-300 text-center">
-          Selected Slots: {selectedCellCount}
+          {/* Selected Slots: {selectedCellCount} */}
         </div>
         {days.map((day, index) => (
           <div
@@ -298,6 +305,8 @@ const WeekViewBody = ({ currentDate }) => {
                   dayIndex={dayIndex}
                   hourIndex={hourIndex}
                   slotIndex={0}
+                  hour={hour}
+                  calculateHeightOfSlot={calculateHeightOfSlot}
                   onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
                   onHover={() => handleHover(dayIndex, hourIndex, 1)}
                   onLeave={handleLeave}
@@ -315,14 +324,16 @@ const WeekViewBody = ({ currentDate }) => {
                       return (
                         <div
                           key={index}
-                          className={`w-full text-sm ${slotHeight(interval)} border border-red-500 cursor-pointer ${isHoveredSlot ? 'bg-blue-100' : ''}`}
+                          className={`w-full text-sm border border-gray-800 cursor-pointer ${isHoveredSlot ? 'bg-blue-100' : ''}`}
+                          style={{paddingTop: calculateHeightOfSlot(hour.slots.length)}}
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
                           onMouseDown={() => handleMouseDown(dayIndex, hourIndex, index)}
                           onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex, index)}
                         >
-                         {getTimeRange(hour, index)}
+                        {console.log(calculateHeightOfSlot(hour.slots.length), 'slot')}
+                         {/* {getTimeRange(hour, index)} */}
                          
 
                         </div>
