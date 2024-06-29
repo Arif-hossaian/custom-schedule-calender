@@ -286,7 +286,7 @@ let events = [
             onMouseEnter={() => handleHover(index)}
             onMouseLeave={handleLeave}
           >
-            {formatDate(day, 'dd')}
+            {formatDate(day, 'MMMM d')}
           </div>
         ))}
       </div>
