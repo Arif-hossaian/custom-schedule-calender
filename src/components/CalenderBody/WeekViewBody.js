@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getWeekDays, formatDate, getDayHours, parseDate } from '../../utils/dateUtlis';
 import { v4 as uuid } from "uuid";
-import { format } from 'date-fns'; // Import format from date-fns
+import { format, parseISO, differenceInMinutes } from 'date-fns'; // Import necessary functions from date-fns
 
 const EventCard = ({ data, startTime, endTime, startTop, height }) => {
   return (
@@ -80,49 +80,6 @@ const WeekViewBody = ({ currentDate }) => {
 
   const unique_id = uuid();
 
-//console.log(eventCards, 'events')
-
-let events = [
-  {
-    id: 'd2ea8833',
-    data: 'test',
-    date:"2024-06-23",
-    startTime: '12:00 PM',
-    endTime: '12:15 PM',
-    dayIndex: 0,
-    startTop:360
-  },
-  {
-    id: 'b2da109d',
-    data: 'trs',
-    date:"2024-06-28",
-    startTime: '10:30 AM',
-    endTime: '10:45 AM',
-    dayIndex: 5,
-    startTop:180
-  },
-  {
-    id: '49577dfa',
-    data: 'ytr',
-    startTime: '09:30 AM',
-    date:"2024-06-25",
-    endTime: '09:45 AM',
-    dayIndex: 2,
-    startTop:60
-  },
-  {
-    id: 'f815272e',
-    data: 'rer',
-    date:"2024-06-29",
-    startTime: '12:30 PM',
-    endTime: '12:45 PM',
-    dayIndex: 6,
-    startTop:420
-    // other properties as needed
-  }
-];
-
-
   useEffect(() => {
     const updateTimePosition = () => {
       const now = new Date();
@@ -144,6 +101,45 @@ let events = [
     return () => clearInterval(intervalId);
   }, []);
 
+  useEffect(() => {
+    // Fetch the API data and update the event cards
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://dev.api.pretamed.com/schedule/fnd/org/638d721322c35b059a46769b'); // Replace with your API URL
+        const result = await response.json();
+
+        const parsedEventCards = result.data.map(event => {
+          const start = parseISO(event.start);
+          const end = parseISO(event.end);
+          const dayIndex = days.findIndex(day => format(day, 'yyyy-MM-dd') === format(start, 'yyyy-MM-dd'));
+          const startHourIndex = start.getHours();
+          const startMinuteIndex = Math.floor(start.getMinutes() / interval);
+          const endHourIndex = end.getHours();
+          const endMinuteIndex = Math.floor(end.getMinutes() / interval);
+          const durationInMinutes = differenceInMinutes(end, start);
+          const height = (durationInMinutes / 60) * 120; // Adjust the height calculation as needed
+
+          return {
+            id: event._id,
+            data: event.title,
+            startTime: format(start, 'hh:mm a'),
+            endTime: format(end, 'hh:mm a'),
+            dayIndex,
+            startTop: (startHourIndex * 60 + startMinuteIndex * interval) * 2, // Adjust the startTop calculation as needed
+            height,
+            date: format(start, 'yyyy-MM-dd')
+          };
+        });
+
+        setEventCards(parsedEventCards);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+console.log(eventCards, 'events')
   const handleSlotClick = (dayIndex, hourIndex, slotIndex) => {
     const text = prompt('Enter text for this slot:');
     if (text !== null) {
@@ -178,13 +174,19 @@ let events = [
         return {
           ...card,
           dayIndex,
-          startTop: hourIndex * 24,
+          startTop: calculateStartTop(dayIndex, hourIndex),
         };
       }
       return card;
     });
 
     setEventCards(updatedEventCards);
+  };
+
+  const calculateStartTop = (dayIndex, hourIndex) => {
+    const cellHeight = 120;
+    const startTop = hourIndex * cellHeight;
+    return startTop;
   };
 
   const handleMouseDown = (dayIndex, hourIndex, slotIndex) => {
@@ -205,7 +207,7 @@ let events = [
   };
 
   const handleMouseUp = () => {
-    const cellHeight = 120
+    const cellHeight = 120;
     isSelecting.current = false;
     if (selectedCells.length > 0) {
       const startCell = selectedCells[0];
@@ -222,54 +224,48 @@ let events = [
       baseTime.setHours(hourInt, parseInt(startHour.split(':')[1], 10), 0, 0);
 
       const startDateTime = new Date(baseTime.getTime() + startCell.slotIndex * interval * 60000);
-      const startTime = format(startDateTime, 'hh:mm a');
+      const startTime = format(startDateTime, 'HH:mm');
+      const duration = selectedCells.length * interval;
+      const height = (duration / 60) * cellHeight;
+      const newCard = {
+        id: unique_id,
+        data: 'New Event',
+        startTime,
+        endTime: format(new Date(startDateTime.getTime() + duration * 60000), 'HH:mm'),
+        dayIndex: startCell.dayIndex,
+        startTop: startCell.hourIndex * cellHeight,
+        height,
+        date: format(days[startCell.dayIndex], 'yyyy-MM-dd'),
+      };
 
-      const endDateTime = new Date(baseTime.getTime() + (endCell.hourIndex - startCell.hourIndex) * 60 * 60000 + (endCell.slotIndex + 1) * interval * 60000);
-      const endTime = format(endDateTime, 'hh:mm a');
-
-      const durationInMinutes = (endDateTime.getTime() - startDateTime.getTime()) / 60000;
-      const height = (durationInMinutes / 60) * cellHeight; // Adjust this to fit your slot height
-
-      const text = prompt('Enter text for this event:');
-      if (text) {
-        setEventCards((prev) => [
-          ...prev,
-          {
-            id: unique_id.slice(0, 8),
-            data: text,
-            startTime,
-            endTime,
-            dayIndex: startCell.dayIndex,
-            startTop: startCell.hourIndex * cellHeight + startCell.slotIndex * (cellHeight / (60 / interval)),
-            height,
-            date: format(days[startCell.dayIndex], 'yyyy-MM-dd') // Set the date here
-          },
-        ]);
-      }
-      setSelectedCells([]);
-      setSelectedCellCount(0);
+      setEventCards([...eventCards, newCard]);
     }
+    setSelectedCells([]);
+    setSelectedCellCount(0);
   };
-  const handleHover = (dayIndex, hourIndex, slotIndex) => {
-    setHoveredCell({ dayIndex, hourIndex });
-    setHoveredColumn(dayIndex);
-    setHoveredRow(hourIndex);
-    setHoveredTimeSlot({ hourIndex, slotIndex });
+
+  const handleHover = (columnIndex, rowIndex, slotCount) => {
+    if (columnIndex !== null) {
+      setHoveredColumn(columnIndex);
+    }
+    if (rowIndex !== null) {
+      setHoveredRow(rowIndex);
+    }
+    if (slotCount !== null) {
+      setHoveredTimeSlot({ hourIndex: rowIndex, slotIndex: slotCount });
+    }
   };
 
   const handleLeave = () => {
-    setHoveredCell(null);
     setHoveredColumn(null);
     setHoveredRow(null);
     setHoveredTimeSlot(null);
   };
 
   const calculateHeightOfSlot = (slotLength) => {
-    const cellHeight = 120; // Height of the parent div in pixels
-
-    let totalPadding = (slotLength - 1) * 2; // Assuming 2px of padding on both top and bottom
-
-    let paddingY = (cellHeight - totalPadding) / slotLength;
+    const cellHeight = 120;
+    const totalPadding = 10;
+    const paddingY = (cellHeight - totalPadding) / slotLength;
     return paddingY;
   };
 
