@@ -60,8 +60,9 @@ const DroppableSlot = ({
 };
 
 const WeekViewBody = ({ currentDate }) => {
+  const interval = 30
   const days = getWeekDays(currentDate);
-  const dayHours = getDayHours(currentDate);
+  const dayHours = getDayHours(currentDate, interval);
   const [slots, setSlots] = useState([]);
   const [hoveredCell, setHoveredCell] = useState(null);
   const [hoveredColumn, setHoveredColumn] = useState(null);
@@ -74,6 +75,8 @@ const WeekViewBody = ({ currentDate }) => {
   const isSelecting = useRef(false);
 
   const unique_id = uuid();
+  const currentTime = format(currentDate, 'hh:mm a')
+
 
   useEffect(() => {
     const updateTimePosition = () => {
@@ -173,10 +176,10 @@ const WeekViewBody = ({ currentDate }) => {
   
       baseTime.setHours(hourInt, parseInt(startHour.split(':')[1], 10), 0, 0);
     
-      const startDateTime = new Date(baseTime.getTime() + startCell.slotIndex * 15 * 60000);
+      const startDateTime = new Date(baseTime.getTime() + startCell.slotIndex * interval * 60000);
       const startTime = format(startDateTime, 'hh:mm a');
       
-      const endDateTime = new Date(baseTime.getTime() + (endCell.hourIndex - startCell.hourIndex) * 60 * 60000 + (endCell.slotIndex + 1) * 15 * 60000);
+      const endDateTime = new Date(baseTime.getTime() + (endCell.hourIndex - startCell.hourIndex) * 60 * 60000 + (endCell.slotIndex + 1) * interval * 60000);
       const endTime = format(endDateTime, 'hh:mm a');
 
       const text = prompt('Enter text for this event:');
@@ -223,13 +226,25 @@ const WeekViewBody = ({ currentDate }) => {
   
     baseTime.setHours(hourInt, parseInt(minutePart, 10), 0, 0);
     
-    const start = new Date(baseTime.getTime() + index * 15 * 60000);
-    const end = new Date(baseTime.getTime() + (index + 1) * 15 * 60000);
+    const start = new Date(baseTime.getTime() + index * interval * 60000);
+    const end = new Date(baseTime.getTime() + (index + 1) * interval * 60000);
   
     const startFormatted = format(start, 'hh:mm a');
     const endFormatted = format(end, 'hh:mm a');
+    const d = format(hour.date, 'MMM dd')
     
     return `${startFormatted} - ${endFormatted}`;
+  };
+
+  const slotHeight = (interval) => {
+    switch (interval) {
+      case 15:
+        return 'py-1';
+      case 30:
+        return 'py-5';
+      default:
+        return 'py-2'
+    }
   };
 
   return (
@@ -251,7 +266,7 @@ const WeekViewBody = ({ currentDate }) => {
       </div>
 
       <div className="grid grid-cols-8">
-        <div className="grid grid-rows-24">
+      <div className="grid grid-rows-24">
           {dayHours.map((hour, hourIndex) => (
             <div
               key={hourIndex}
@@ -293,21 +308,22 @@ const WeekViewBody = ({ currentDate }) => {
                   // isSelecting={isSelecting.current && isSelected}
                   selectedCells={selectedCells}
                 >
-                  <div className={`w-full h-full`}>
-                    {Array.from({ length: 4 }).map((_, index) => {
+                  <div className={`w-full`}>
+                    {hour.slots.map((_, index) => {
                       //const slot = slotsForHour.find((s) => s.slotIndex === index);
                       const isHoveredSlot = hoveredTimeSlot && hoveredTimeSlot.hourIndex === hourIndex && hoveredTimeSlot.slotIndex === index;
                       return (
                         <div
                           key={index}
-                          className={`w-full text-sm py-4 border border-red-500 cursor-pointer ${isHoveredSlot ? 'bg-blue-100' : ''}`}
+                          className={`w-full text-sm ${slotHeight(interval)} border border-red-500 cursor-pointer ${isHoveredSlot ? 'bg-blue-100' : ''}`}
                           onClick={() => handleSlotClick(dayIndex, hourIndex, index)}
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, dayIndex, hourIndex)}
                           onMouseDown={() => handleMouseDown(dayIndex, hourIndex, index)}
                           onMouseEnter={() => handleMouseEnter(dayIndex, hourIndex, index)}
                         >
-                         {/* {getTimeRange(hour, index)} {slot ? slot.text : ''} */}
+                         {getTimeRange(hour, index)}
+                         
 
                         </div>
                       );
@@ -342,7 +358,7 @@ const WeekViewBody = ({ currentDate }) => {
               ))}
           </div>
         ))}
-
+{/* 
         {currentTimePosition !== null && (
           <div
             style={{
@@ -355,7 +371,7 @@ const WeekViewBody = ({ currentDate }) => {
               zIndex: 20,
             }}
           />
-        )}
+        )} */}
       </div>
     </div>
   );
