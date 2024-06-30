@@ -60,7 +60,7 @@ const DroppableSlot = ({
 };
 
 const WeekViewBody = ({ currentDate }) => {
-  const interval = 15;
+  const interval = 15
   const days = getWeekDays(currentDate);
   let weekHours = {};
 
@@ -81,7 +81,7 @@ const WeekViewBody = ({ currentDate }) => {
 
   const unique_id = uuid();
 
-//console.log(eventCards, 'events')
+console.log(eventCards, 'events')
 
 let events = [
   {
@@ -190,6 +190,40 @@ const apiEvents = [
     updateDate: "2024-01-04T04:12:15.629Z",
     updated: true,
     _id: "6594fe543543b0109606dcaf"
+  },
+  {
+    active: true,
+    billed: false,
+    contacts: "1649894",
+    createDate: "2024-07-03T06:27:32.878Z",
+    creatorId: "",
+    delete: false,
+    details: "",
+    end: new Date("Thu July 05 2024 11:15:00 GMT+0600 (Bangladesh Standard Time)"),
+    faxed: false,
+    hasNoteId: true,
+    isCanceled: false,
+    isPatientArrived: false,
+    isPostponed: false,
+    medicalStaffId: "63f22a07fce1f2767946a634",
+    note: "",
+    noteId: "tst-nt123",
+    organizationId: "638d721322c35b059a46769b",
+    patientId: "63bd76a84186ccf1081ae354",
+    phn: "8494231231",
+    postpondDate: "",
+    resource: { contactNumber: '1649894' },
+    scheduledTime: "",
+    signed: false,
+    start: new Date("Thu July 05 2024 9:00:00 GMT+0600 (Bangladesh Standard Time)"),
+    status: true,
+    title: "Islam, Salam Ahmed - 8494231231",
+    typeId: "65956fe63543b0109606de6c",
+    typeOfVisit: "Chronic Care Patients",
+    update: false,
+    updateDate: "2024-01-04T04:12:15.629Z",
+    updated: true,
+    _id: "6594fe543543b0109606dcaf"
   }
 ];
 
@@ -198,10 +232,11 @@ const apiEvents = [
     const updateTimePosition = () => {
       const now = new Date();
       const hours = now.getHours();
+      //console.log(hours, 'hours')
       const minutes = now.getMinutes();
       const totalMinutes = hours * 60 + minutes;
 
-      const slotHeight = 13; // Height of each slot
+      const slotHeight = 4; // Height of each slot
       const paddingHeight = 24; // Total vertical padding added by Tailwind's p-1.5
 
       const totalPixels = (totalMinutes / (24 * 60)) * (24 * (slotHeight + paddingHeight));
@@ -215,27 +250,7 @@ const apiEvents = [
     return () => clearInterval(intervalId);
   }, []);
 
-  // const handleSlotClick = (dayIndex, hourIndex, slotIndex) => {
-  //   const text = prompt('Enter text for this slot:');
-  //   if (text !== null) {
-  //     let newSlots = slots.slice();
-  //     const existingSlotIndex = newSlots.findIndex(
-  //       (slot) =>
-  //         slot.dayIndex === dayIndex &&
-  //         slot.hourIndex === hourIndex &&
-  //         slot.slotIndex === slotIndex
-  //     );
 
-  //     if (existingSlotIndex > -1) {
-  //       newSlots[existingSlotIndex] = { ...newSlots[existingSlotIndex], text };
-  //     } else {
-  //       newSlots.push({ dayIndex, hourIndex, slotIndex, text });
-  //     }
-
-  //     setSlots(newSlots);
-  //   }
-  // };
-//console.log(slots, 'slots')
 
 const calculateDayIndex = (date) => {
   const startOfWeek = startOfDay(days[0]);
@@ -247,6 +262,7 @@ const calculateStartTop = (startTime) => {
   const timeInMinutes = parseInt(hours) * 60 + parseInt(minutes);
   return (timeInMinutes / interval) * 2; // Adjust based on your slot height and interval
 };
+
 
 useEffect(() => {
   const formattedEvents = apiEvents.map(event => {
@@ -527,6 +543,19 @@ useEffect(() => {
                   />
                 </div>
               ))}
+              {currentTimePosition !== null && (
+          <div
+            style={{
+              position: 'absolute',
+              top: `${currentTimePosition}px`,
+              left: '0',
+              right: '0',
+              height: '2px',
+              backgroundColor: 'yellow',
+              zIndex: 20,
+            }}
+          />
+        )}
           </div>
         ))}
       </div>
