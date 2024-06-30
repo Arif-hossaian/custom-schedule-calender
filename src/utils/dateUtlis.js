@@ -87,3 +87,32 @@ export const getDayHoursInMonth = (date) => {
 
 export const formatDate = (date, formatString = 'yyyy-MM-dd') => format(date, formatString);
 export const parseDate = (dateString, formatString = 'yyyy-MM-dd') => parse(dateString, formatString, new Date());
+
+
+
+function convertTimeToMinutes(time) {
+  // Extract the period (AM/PM)
+  const period = time.slice(-2);
+  
+  // Extract the hour and minute parts
+  const [hourString, minuteString] = time.slice(0, -2).split(':');
+  
+  // Convert hour and minute parts to numbers
+  let hours = parseInt(hourString, 10);
+  const minutes = parseInt(minuteString, 10);
+  
+  // Convert hours to 24-hour format
+  if (period === 'PM' && hours !== 12) {
+      hours += 12;
+  } else if (period === 'AM' && hours === 12) {
+      hours = 0;
+  }
+  
+  // Calculate total minutes
+  return (hours * 60) + minutes;
+}
+
+// Example usage
+const timeString = "9:00AM";
+const totalMinutes = convertTimeToMinutes(timeString);
+console.log(totalMinutes);  // Output: 540

@@ -4,8 +4,9 @@ import { v4 as uuid } from "uuid";
 import { differenceInCalendarDays, format, startOfDay } from 'date-fns'; // Import format from date-fns
 
 const EventCard = ({ data, startTime, endTime, startTop, height, date }) => {
+  console.log(startTop, 'start top')
   return (
-    <div style={{ height: `${height}px`, top: startTop, position: 'absolute', backgroundColor: 'lightblue', zIndex: 10, cursor: 'pointer', width: '95%' }}>
+    <div style={{ height: `${height}%`, top: `${startTop}%`,  position: 'absolute', backgroundColor: 'lightblue', zIndex: 10, cursor: 'pointer', width: '95%' }}>
       <div className='flex justify-start items-center'>
         <p>{data}</p>
         <p className='ml-2'>{startTime} - {endTime}</p>
@@ -74,53 +75,122 @@ const WeekViewBody = ({ currentDate }) => {
   const [hoveredRow, setHoveredRow] = useState(null);
   const [hoveredTimeSlot, setHoveredTimeSlot] = useState(null);
   const [selectedCells, setSelectedCells] = useState([]);
-  const [eventCards, setEventCards] = useState([]);
+  const [eventCards, setEventCards] = useState([
+    {
+      id: 'd2ea8833',
+      data: 'test',
+      date:"2024-06-30",
+      startTime: '9:15 AM',
+      endTime: '9:45 AM',
+      dayIndex: 0,
+    },
+    {
+      id: 'b2da109d',
+      data: 'trs',
+      date:"2024-06-30",
+      startTime: '10:30 AM',
+      endTime: '11:45 AM',
+      dayIndex: 0,
+    },
+    {
+      id: '49577dfa',
+      data: 'ytr',
+      startTime: '3:30 PM',
+      date:"2024-07-05",
+      endTime: '4:00 PM',
+      dayIndex: 4,
+      startTop:60
+    },
+  ]);
   const [selectedCellCount, setSelectedCellCount] = useState(0);
   const [currentTimePosition, setCurrentTimePosition] = useState(null);
   const isSelecting = useRef(false);
 
   const unique_id = uuid();
 
-console.log(eventCards, 'events')
+//console.log(eventCards, 'events')
+
+
+function convertTimeToMinutes(time) {
+  // Extract the period (AM/PM)
+  const period = time.slice(-2);
+  
+  // Extract the hour and minute parts
+  const [hourString, minuteString] = time.slice(0, -2).split(':');
+  
+  // Convert hour and minute parts to numbers
+  let hours = parseInt(hourString, 10);
+  const minutes = parseInt(minuteString, 10);
+  
+  // Convert hours to 24-hour format
+  if (period === 'PM' && hours !== 12) {
+      hours += 12;
+  } else if (period === 'AM' && hours === 12) {
+      hours = 0;
+  }
+  
+  // Calculate total minutes
+  return (hours * 60) + minutes;
+}
+
+const minDiff = (aMin, bMin)  => {
+  let a = convertTimeToMinutes(aMin)
+  let b = convertTimeToMinutes(bMin)
+  return a > b ? a - b : b - a
+}
+
+let OStartTime = '9:00 AM'
+let OEndTime = '5:00 PM'
+
+let mintInColumn = minDiff(OStartTime, OEndTime)
+//console.log(mintInColumn, 'min col')
+
+
+const cardHeight = (eventStartTime, eventEndTime) =>{
+  return minDiff(eventStartTime, eventEndTime)* 100/mintInColumn
+}
+
+const calTop = ( eventStartTime) => {
+  return minDiff(OStartTime, eventStartTime)/mintInColumn *100
+}
+
 
 let events = [
   {
     id: 'd2ea8833',
     data: 'test',
-    date:"2024-06-23",
-    startTime: '12:00 PM',
-    endTime: '12:15 PM',
+    date:"2024-06-30",
+    startTime: '9:15 AM',
+    endTime: '9:45 AM',
     dayIndex: 0,
-    startTop:360
   },
   {
     id: 'b2da109d',
     data: 'trs',
-    date:"2024-06-28",
+    date:"2024-06-30",
     startTime: '10:30 AM',
-    endTime: '10:45 AM',
-    dayIndex: 5,
-    startTop:180
+    endTime: '11:45 AM',
+    dayIndex: 0,
   },
   {
     id: '49577dfa',
     data: 'ytr',
-    startTime: '09:30 AM',
-    date:"2024-06-25",
-    endTime: '09:45 AM',
-    dayIndex: 2,
+    startTime: '3:30 PM',
+    date:"2024-07-05",
+    endTime: '4:00 PM',
+    dayIndex: 4,
     startTop:60
   },
-  {
-    id: 'f815272e',
-    data: 'rer',
-    date:"2024-06-29",
-    startTime: '12:30 PM',
-    endTime: '12:45 PM',
-    dayIndex: 6,
-    startTop:420
-    // other properties as needed
-  }
+  // {
+  //   id: 'f815272e',
+  //   data: 'rer',
+  //   date:"2024-06-29",
+  //   startTime: '12:30 PM',
+  //   endTime: '12:45 PM',
+  //   dayIndex: 6,
+  //   startTop:420
+  //   // other properties as needed
+  // }
 ];
 
 const apiEvents = [
@@ -264,28 +334,28 @@ const calculateStartTop = (startTime) => {
 };
 
 
-useEffect(() => {
-  const formattedEvents = apiEvents.map(event => {
-    const startTime = format(new Date(event.start), 'HH:mm');
-    const endTime = format(new Date(event.end), 'HH:mm');
-    const dayIndex = calculateDayIndex(event.start);
-    const startTop = calculateStartTop(startTime);
-    const height = ((new Date(event.end) - new Date(event.start)) / 60000 / interval) * 24; // Adjust based on your slot height and interval
+// useEffect(() => {
+//   const formattedEvents = apiEvents.map(event => {
+//     const startTime = format(new Date(event.start), 'HH:mm');
+//     const endTime = format(new Date(event.end), 'HH:mm');
+//     const dayIndex = calculateDayIndex(event.start);
+//     const startTop = calculateStartTop(startTime);
+//     const height = ((new Date(event.end) - new Date(event.start)) / 60000 / interval) * 24; // Adjust based on your slot height and interval
 
-    return {
-      id: event._id,
-      data: event.title,
-      startTime,
-      endTime,
-      dayIndex,
-      startTop,
-      height,
-      date: format(new Date(event.start), 'yyyy-MM-dd')
-    };
-  });
+//     return {
+//       id: event._id,
+//       data: event.title,
+//       startTime,
+//       endTime,
+//       dayIndex,
+//       startTop,
+//       height,
+//       date: format(new Date(event.start), 'yyyy-MM-dd')
+//     };
+//   });
 
-  setEventCards(formattedEvents);
-}, []);
+//   setEventCards(formattedEvents);
+// }, []);
 
   const handleDragStart = (e, cardId) => {
     e.dataTransfer.setData('text/plain', cardId);
@@ -375,7 +445,6 @@ useEffect(() => {
   //     setSelectedCellCount(0);
   //   }
   // };
-
 
   const handleMouseUp = () => {
     const cellHeight = 120
@@ -537,8 +606,8 @@ useEffect(() => {
                     data={card.data}
                     startTime={card.startTime}
                     endTime={card.endTime}
-                    startTop={card.startTop}
-                    height={card.height}
+                    startTop={calTop(card.startTime)}
+                    height={cardHeight(card.startTime, card.endTime)}
                     date={card.date}
                   />
                 </div>
